@@ -3,19 +3,6 @@
 @section('title', 'Land Your First Paying Client in 90 Days')
 
 @section('content')
-{{-- Sticky Navbar --}}
-<nav class="fixed top-0 left-0 w-full bg-white shadow-md z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <a href="/" class="text-2xl font-bold text-blue-600">AI Freelance</a>
-        <div class="space-x-6 hidden md:flex">
-            <a href="#tiers" class="text-gray-700 hover:text-blue-600 transition">Pricing</a>
-            <a href="#why" class="text-gray-700 hover:text-blue-600 transition">Why This Works</a>
-            <a href="#cta" class="text-gray-700 hover:text-blue-600 transition">Guarantee</a>
-            <a href="{{ route('register') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Register</a>
-        </div>
-    </div>
-</nav>
-
 {{-- Hero Section --}}
 <div class="relative bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 pt-28 overflow-hidden">
     <section class="relative max-w-7xl mx-auto px-6 py-24 lg:flex lg:items-center lg:justify-between">

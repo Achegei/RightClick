@@ -25,15 +25,18 @@ use App\Http\Controllers\Frontend\TestimonialController as FrontendTestimonialCo
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Frontend\PricingController;
 
 // -------------------------------------------------
 // Public Routes
 // -------------------------------------------------
-Route::get('/', [FrontendFreeRoadmapController::class, 'index'])->name('home');
+Route::view('/', 'welcome')->name('home');
+
 
 Route::get('/checkout/{tier}', [CheckoutController::class, 'show'])->name('checkout');
 Route::get('/free-roadmap', [FrontendFreeRoadmapController::class, 'index'])->name('free-roadmap');
 Route::post('/free-roadmap/subscribe', [FrontendFreeRoadmapController::class, 'subscribeNewsletter'])->name('free-roadmap.subscribe');
+Route::get('/pricing', [PricingController::class, 'index'])->name('pricing');
 
 // Blogs
 Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');
