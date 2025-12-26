@@ -13,8 +13,8 @@
             <p class="text-white text-lg sm:text-xl mb-8 max-w-xl mx-auto lg:mx-0 animate-fade-in-down delay-100">
                 Learn AI-assisted digital skills, position yourself professionally online, and start earning from freelance clients globally — from Kenya to North America and Europe.
             </p>
-            <a href="#tiers" class="inline-block bg-white text-blue-600 font-semibold px-10 py-4 rounded-lg shadow-lg transform transition hover:scale-105 hover:shadow-xl animate-fade-in-down delay-200">
-                Get Started Free
+            <a href="{{ route('pricing') }}" class="cta-button inline-block bg-white text-blue-600 font-semibold px-10 py-4 rounded-lg shadow-lg transform transition animate-fade-in-down delay-200">
+                Yes, Show Me How!
             </a>
         </div>
 
@@ -41,49 +41,25 @@
         </div>
     </section>
 
-    {{-- Tiers --}}
-    <section id="tiers" class="grid md:grid-cols-3 gap-8 mb-20 text-center">
-        <div class="border rounded-2xl p-8 shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2">
-            <h3 class="text-2xl font-semibold mb-4">Tier 1 — Free</h3>
-            <p class="text-gray-600 mb-6">Discover how online income works, explore skill paths, and reset your mindset for success.</p>
-            <a href="{{ route('free-roadmap') }}" class="block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded transition">
-                Start Free
-            </a>
-        </div>
-        <div class="border rounded-2xl p-8 shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2">
-            <h3 class="text-2xl font-semibold mb-4">Tier 2 — Pro (KES 1,999)</h3>
-            <p class="text-gray-600 mb-6">Learn your first monetizable skill, build a portfolio, and land your first paying client.</p>
-            <a href="{{ route('checkout', ['tier' => 'pro']) }}" class="block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded transition">
-                Join Pro
-            </a>
-        </div>
-        <div class="border rounded-2xl p-8 shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2">
-            <h3 class="text-2xl font-semibold mb-4">Tier 3 — Premium (KES 4,999)</h3>
-            <p class="text-gray-600 mb-6">Accelerate results with 1-on-1 coaching, profile audits, and priority support.</p>
-            <a href="{{ route('checkout', ['tier' => 'premium']) }}" class="block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded transition">
-                Join Premium
-            </a>
-        </div>
-    </section>
-
-    {{-- CTA --}}
-    <section id="cta" class="text-center mb-20">
-        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">90-Day Skill-to-Income Guarantee</h2>
+    {{-- CTA Section --}}
+    <section id="cta-pricing" class="text-center mb-20">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Want to Learn How to Make Money Online in 2026?</h2>
         <p class="text-gray-700 mb-6 max-w-2xl mx-auto">
-            Complete the program, follow the roadmap, implement the systems, and if you gain no measurable benefit (skills, clarity, or first client), you get a full refund. No hype. No false promises.
+            Discover actionable skills, AI-powered tools, and a 90-day roadmap that guides you from beginner to first paying client.
+            Whether you’re in Kenya, North America, or Europe, we’ll show you exactly how to get started.
         </p>
-        <a href="#tiers" class="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-10 py-4 rounded-lg shadow-lg transition transform hover:scale-105">
-            Start Learning Today
+        <a href="{{ route('pricing') }}" class="cta-button inline-block bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-10 py-4 rounded-lg shadow-lg transition transform">
+            Yes, Show Me How!
         </a>
     </section>
 </div>
 
-{{-- Floating Enroll Now Button --}}
-<a href="#tiers" id="floatingEnrollBtn" class="fixed bottom-8 right-8 bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-700 transition transform scale-0">
-    Enroll Now
+{{-- Floating "Show Me How" Button --}}
+<a href="{{ route('pricing') }}" id="floatingEnrollBtn" class="fixed bottom-8 right-8 bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-700 transition transform scale-0">
+    Show Me How
 </a>
 
-{{-- Tailwind Animations --}}
+{{-- Tailwind Animations & Micro-Animations --}}
 <style>
     @keyframes fade-in-down {
         0% { opacity: 0; transform: translateY(-20px); }
@@ -93,10 +69,20 @@
         0% { opacity: 0; transform: translateY(20px); }
         100% { opacity: 1; transform: translateY(0); }
     }
+    @keyframes bounce-glow {
+        0%, 100% { transform: translateY(0); box-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        50% { transform: translateY(-4px); box-shadow: 0 0 20px rgba(255,255,255,0.6); }
+    }
+
     .animate-fade-in-down { animation: fade-in-down 1s ease forwards; }
     .animate-fade-in-up { animation: fade-in-up 1s ease forwards; }
     .delay-100 { animation-delay: 0.1s; }
     .delay-200 { animation-delay: 0.2s; }
+
+    /* Micro-animation on hover */
+    .cta-button:hover {
+        animation: bounce-glow 0.6s ease-in-out infinite;
+    }
 
     html { scroll-behavior: smooth; }
 </style>
@@ -112,6 +98,14 @@
             btn.classList.add('scale-0');
             btn.classList.remove('scale-100');
         }
+    });
+
+    // Floating button micro-animation
+    btn.addEventListener('mouseenter', () => {
+        btn.style.animation = 'bounce-glow 0.6s ease-in-out infinite';
+    });
+    btn.addEventListener('mouseleave', () => {
+        btn.style.animation = '';
     });
 </script>
 @endsection

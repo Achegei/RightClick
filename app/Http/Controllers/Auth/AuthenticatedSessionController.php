@@ -14,9 +14,12 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('auth.login');
+        // Capture optional "next" redirect target
+        $next = $request->query('next');
+
+        return view('auth.login', compact('next'));
     }
 
     /**
@@ -25,10 +28,22 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // 1️⃣ Highest priority: explicit next URL
+        if ($request->filled('next')) {
+            return redirect()->to($request->input('next'));
+        }
+
+        $user = Auth::user();
+
+        // 2️⃣ Redirect based on user tier (MUST return RedirectResponse)
+        return match ($user->tier) {
+            'free'    => redirect()->route('free-roadmap'),
+            'pro'     => redirect()->route('pro-landing'),
+            'premium' => redirect()->route('premium-landing'),
+            default   => redirect()->route('pricing'),
+        };
     }
 
     /**
@@ -39,7 +54,6 @@ class AuthenticatedSessionController extends Controller
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect('/');

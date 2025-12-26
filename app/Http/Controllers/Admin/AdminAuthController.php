@@ -24,18 +24,20 @@ class AdminAuthController extends Controller
 
         $credentials = $request->only('email', 'password');
 
-        if (Auth::attempt($credentials) && Auth::user()->role_id === 1) {
+        // Use the admin guard explicitly
+        if (Auth::guard('admin')->attempt($credentials)) {
             $request->session()->regenerate();
             return redirect()->intended(route('admin.dashboard'));
         }
 
-        return back()->withErrors(['email' => 'Invalid credentials or not an admin'])->withInput();
+        return back()->withErrors(['email' => 'Invalid credentials'])->withInput();
     }
 
     // Handle logout
     public function logout(Request $request)
     {
-        Auth::logout();
+        Auth::guard('admin')->logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

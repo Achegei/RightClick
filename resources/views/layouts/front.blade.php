@@ -23,7 +23,7 @@
             @guest
                 <a href="{{ route('register') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Register</a>
             @else
-                <a href="{{ route('dashboard') }}" class="text-gray-700 hover:text-blue-600 transition font-semibold">Dashboard</a>
+                <!--<a href="{{ route('dashboard') }}" class="text-gray-700 hover:text-blue-600 transition font-semibold">Dashboard</a>-->
                 <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf
                     <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
@@ -53,7 +53,7 @@
         @guest
             <a href="{{ route('register') }}" class="block px-6 py-3 text-white bg-blue-600 hover:bg-blue-700 transition">Register</a>
         @else
-            <a href="{{ route('dashboard') }}" class="block px-6 py-3 border-b text-gray-700 hover:text-blue-600 transition">Dashboard</a>
+            <!--<a href="{{ route('dashboard') }}" class="block px-6 py-3 border-b text-gray-700 hover:text-blue-600 transition">Dashboard</a>-->
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="w-full text-left px-6 py-3 text-white bg-red-600 hover:bg-red-700 transition">
