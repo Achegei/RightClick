@@ -37,5 +37,17 @@
    class="flex items-center px-4 py-2 rounded-lg transition {{ navClass('admin.blogs.*') }}">
     Testimonials
 </a>
+<a href="{{ route('admin.business-ideas.index') }}"
+   class="flex items-center px-4 py-2 rounded-lg transition {{ navClass('admin.blogs.*') }}">
+    Business Ideas
+</a>
 
+<a href="{{ route('admin.comments.index') }}"
+   class="flex items-center px-4 py-2 rounded-lg transition {{ navClass('admin.blogs.*') }}">
+   Comments
+</a>
 
+<a href="{{ route('admin.success-stories.index') }}"
+   class="flex items-center px-4 py-2 rounded-lg transition {{ navClass('admin.blogs.*') }}">
+   Success Stories
+</a>

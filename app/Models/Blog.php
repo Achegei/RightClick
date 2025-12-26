@@ -28,4 +28,9 @@ class Blog extends Model
         return $query->whereNotNull('published_at')
                      ->where('published_at', '<=', now());
     }
+    public function comments()
+    {
+        return $this->morphMany(Comment::class, 'commentable');
+    }
+
 }

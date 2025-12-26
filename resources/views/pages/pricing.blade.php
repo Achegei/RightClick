@@ -135,7 +135,7 @@ document.querySelectorAll('.lesson-complete').forEach(cb => {
             <li>✅ Best online business models for 2026</li>
             <li>✅ How people really make money online (examples & case studies)</li>
             <li>✅ Positioning yourself to earn online in 2026</li>
-            <li>✅ Mindset reset: expectations vs reality</li>
+            <li>✅ Best business ideas to start in 2026</li>
         </ul>
 
         <a href="{{ Auth::check() ? route('free-roadmap') : route('register') }}"

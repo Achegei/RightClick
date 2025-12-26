@@ -18,6 +18,10 @@ use App\Http\Controllers\Admin\ResourceController;
 use App\Http\Controllers\Admin\VideoController;
 use App\Http\Controllers\Admin\NewsletterSubscriberController;
 use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
+use App\Http\Controllers\Admin\BusinessIdeaController;
+use App\Http\Controllers\Admin\SuccessStoryController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +35,7 @@ use App\Http\Controllers\Frontend\PricingController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\CommentController as AdminCommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -86,6 +91,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/comments', [CommentController::class, 'store'])
+        ->name('comments.store');
+    Route::get('comments', [Admin\CommentController::class, 'index'])->name('comments.index');
+
 
     // Profile management
     Route::prefix('profile')->name('profile.')->group(function () {
@@ -117,6 +126,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     | Admin Authenticated
     |--------------------------------------------------
     */
+
+    Route::prefix('admin')->name('admin.')->middleware(['auth', 'can:access-admin-panel'])->group(function () {
+    Route::resource('success-stories', Admin\SuccessStoryController::class);
+});
+
     Route::middleware('auth:admin')->group(function () {
 
         // Logout
@@ -135,6 +149,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             'blogs' => AdminBlogController::class,
             'resources' => ResourceController::class,
             'testimonials' => AdminTestimonialController::class,
+            'business-ideas' => BusinessIdeaController::class,
+            'success-stories' => SuccessStoryController::class,
         ]);
 
         // Newsletter subscribers
@@ -144,8 +160,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('testimonials/{testimonial}/toggle-approval', [AdminTestimonialController::class, 'toggleApproval'])
             ->name('testimonials.toggleApproval');
 
+        Route::resource('business-ideas', BusinessIdeaController::class);
+
+
         // Default admin redirect
         Route::get('/', fn () => redirect()->route('admin.dashboard'));
+
+        Route::prefix('comments')->group(function () {
+            Route::get('/', [AdminCommentController::class, 'index'])->name('comments.index');
+            Route::post('{comment}/approve', [AdminCommentController::class, 'approve'])->name('comments.approve');
+            Route::delete('{comment}', [AdminCommentController::class, 'destroy'])->name('comments.destroy');
+        });
+
     });
 });
 
