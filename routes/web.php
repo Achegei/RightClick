@@ -34,7 +34,7 @@ use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
-| PUBLIC ROUTES
+| 1. PUBLIC ROUTES
 |--------------------------------------------------------------------------
 */
 Route::view('/', 'welcome')->name('home');
@@ -42,23 +42,16 @@ Route::get('/pricing', [PricingController::class, 'index'])->name('pricing');
 
 /*
 |--------------------------------------------------------------------------
-| FREE ROADMAP (DYNAMIC CONTENT)
+| 2. FREE ROADMAP
 |--------------------------------------------------------------------------
 */
-Route::get('/free-roadmap', [FreeRoadmapController::class, 'index'])
-    ->name('free-roadmap');
-
-Route::post('/free-roadmap/subscribe',
-    [FreeRoadmapController::class, 'subscribeNewsletter']
-)->name('free-roadmap.subscribe');
-
-Route::middleware('auth')->post('/free-roadmap/complete',
-    [FreeRoadmapController::class, 'markCompleted']
-)->name('free-roadmap.complete');
+Route::get('/free-roadmap', [FreeRoadmapController::class, 'index'])->name('free-roadmap');
+Route::post('/free-roadmap/subscribe', [FreeRoadmapController::class, 'subscribeNewsletter'])->name('free-roadmap.subscribe');
+Route::middleware('auth')->post('/free-roadmap/complete', [FreeRoadmapController::class, 'markCompleted'])->name('free-roadmap.complete');
 
 /*
 |--------------------------------------------------------------------------
-| BLOGS (FRONTEND)
+| 3. BLOG ROUTES (FRONTEND)
 |--------------------------------------------------------------------------
 */
 Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');
@@ -66,49 +59,35 @@ Route::get('/blog/{blog:slug}', [BlogController::class, 'show'])->name('blogs.sh
 
 /*
 |--------------------------------------------------------------------------
-| TESTIMONIALS (FRONTEND)
+| 4. TESTIMONIALS (FRONTEND)
 |--------------------------------------------------------------------------
 */
-Route::get('/testimonials',
-    [FrontendTestimonialController::class, 'index']
-)->name('testimonials.index');
-
-Route::get('/testimonials/create',
-    [FrontendTestimonialController::class, 'create']
-)->name('testimonials.create');
-
-Route::post('/testimonials',
-    [FrontendTestimonialController::class, 'store']
-)->name('testimonials.store');
+Route::get('/testimonials', [FrontendTestimonialController::class, 'index'])->name('testimonials.index');
+Route::get('/testimonials/create', [FrontendTestimonialController::class, 'create'])->name('testimonials.create');
+Route::post('/testimonials', [FrontendTestimonialController::class, 'store'])->name('testimonials.store');
 
 /*
 |--------------------------------------------------------------------------
-| CHECKOUT & PAYMENTS
+| 5. CHECKOUT & PAYMENTS
 |--------------------------------------------------------------------------
 */
-Route::get('/checkout/{tier}',
-    [CheckoutController::class, 'show']
-)->name('checkout.show');
-
-Route::get('/checkout/{tier}/payment',
-    [CheckoutController::class, 'paymentForm']
-)->name('checkout.payment');
-
-Route::post('/checkout/{tier}/payment',
-    [CheckoutController::class, 'submitPayment']
-)->name('checkout.payment.submit');
+Route::prefix('checkout')->group(function () {
+    Route::get('{tier}', [CheckoutController::class, 'show'])->name('checkout.show');
+    Route::get('{tier}/payment', [CheckoutController::class, 'paymentForm'])->name('checkout.payment');
+    Route::post('{tier}/payment', [CheckoutController::class, 'submitPayment'])->name('checkout.payment.submit');
+});
 
 /*
 |--------------------------------------------------------------------------
-| AUTHENTICATED USER ROUTES
+| 6. AUTHENTICATED USER ROUTES
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    Route::get('/dashboard',
-        [DashboardController::class, 'index']
-    )->name('dashboard');
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Profile management
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('update');
@@ -118,7 +97,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN ROUTES
+| 7. ADMIN ROUTES
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -129,13 +108,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     |--------------------------------------------------
     */
     Route::middleware('guest:admin')->group(function () {
-        Route::get('login',
-            [AdminAuthController::class, 'showLoginForm']
-        )->name('login');
-
-        Route::post('login',
-            [AdminAuthController::class, 'login']
-        )->name('login.submit');
+        Route::get('login', [AdminAuthController::class, 'showLoginForm'])->name('login');
+        Route::post('login', [AdminAuthController::class, 'login'])->name('login.submit');
     });
 
     /*
@@ -145,40 +119,48 @@ Route::prefix('admin')->name('admin.')->group(function () {
     */
     Route::middleware('auth:admin')->group(function () {
 
-        Route::post('logout',
-            [AdminAuthController::class, 'logout']
-        )->name('logout');
+        // Logout
+        Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
 
-        Route::get('dashboard',
-            [AdminController::class, 'index']
-        )->name('dashboard');
+        // Dashboard
+        Route::get('dashboard', [AdminController::class, 'index'])->name('dashboard');
 
-        Route::resource('programs', AdminProgramController::class);
-        Route::resource('courses', AdminCourseController::class);
-        Route::resource('users', AdminUserController::class);
-        Route::resource('lessons', LessonController::class);
-        Route::resource('videos', VideoController::class);
-        Route::resource('blogs', AdminBlogController::class);
-        Route::resource('resources', ResourceController::class);
+        // Resources
+        Route::resources([
+            'programs' => AdminProgramController::class,
+            'courses' => AdminCourseController::class,
+            'users' => AdminUserController::class,
+            'lessons' => LessonController::class,
+            'videos' => VideoController::class,
+            'blogs' => AdminBlogController::class,
+            'resources' => ResourceController::class,
+            'testimonials' => AdminTestimonialController::class,
+        ]);
 
-        // ✅ FIXED TESTIMONIAL CONTROLLER
-        Route::resource('testimonials', AdminTestimonialController::class);
+        // Newsletter subscribers
+        Route::resource('newsletter-subscribers', NewsletterSubscriberController::class)->only(['index', 'destroy']);
 
-        Route::post('testimonials/{testimonial}/toggle-approval',
-            [AdminTestimonialController::class, 'toggleApproval']
-        )->name('testimonials.toggleApproval');
+        // Testimonial approval toggle
+        Route::post('testimonials/{testimonial}/toggle-approval', [AdminTestimonialController::class, 'toggleApproval'])
+            ->name('testimonials.toggleApproval');
 
-        Route::resource('newsletter-subscribers',
-            NewsletterSubscriberController::class
-        )->only(['index', 'destroy']);
-
+        // Default admin redirect
         Route::get('/', fn () => redirect()->route('admin.dashboard'));
     });
 });
 
 /*
 |--------------------------------------------------------------------------
-| AUTH SCAFFOLDING (Laravel Breeze/Fortify/etc.)
+| 8. AUTHENTICATION ROUTES (Breeze/Fortify)
 |--------------------------------------------------------------------------
 */
 require __DIR__ . '/auth.php';
+
+/*
+|--------------------------------------------------------------------------
+| 9. INTA SEND WEBHOOK
+|--------------------------------------------------------------------------
+*/
+Route::post('/webhook/intasend', [CheckoutController::class, 'handleIntaSend'])
+    ->middleware('web')
+    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
