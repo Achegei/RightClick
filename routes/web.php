@@ -36,6 +36,9 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\CommentController as AdminCommentController;
+use App\Http\Controllers\Frontend\ProgramController;
+use App\Http\Controllers\Frontend\ProRoadmapController;
+use App\Http\Controllers\Frontend\PremiumRoadmapController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +47,10 @@ use App\Http\Controllers\Admin\CommentController as AdminCommentController;
 */
 Route::view('/', 'welcome')->name('home');
 Route::get('/pricing', [PricingController::class, 'index'])->name('pricing');
+Route::prefix('programs')->group(function () {
+    Route::get('/', [ProgramController::class, 'index'])->name('program.index');
+    Route::get('/{slug}', [ProgramController::class, 'show'])->name('program.show');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -53,7 +60,6 @@ Route::get('/pricing', [PricingController::class, 'index'])->name('pricing');
 Route::get('/free-roadmap', [FreeRoadmapController::class, 'index'])->name('free-roadmap');
 Route::post('/free-roadmap/subscribe', [FreeRoadmapController::class, 'subscribeNewsletter'])->name('free-roadmap.subscribe');
 Route::middleware('auth')->post('/free-roadmap/complete', [FreeRoadmapController::class, 'markCompleted'])->name('free-roadmap.complete');
-
 /*
 |--------------------------------------------------------------------------
 | 3. BLOG ROUTES (FRONTEND)
@@ -81,6 +87,13 @@ Route::prefix('checkout')->group(function () {
     Route::get('{tier}/payment', [CheckoutController::class, 'paymentForm'])->name('checkout.payment');
     Route::post('{tier}/payment', [CheckoutController::class, 'submitPayment'])->name('checkout.payment.submit');
 });
+
+Route::get('/pro-roadmap', [ProRoadmapController::class, 'index'])
+    ->middleware('subscription:pro');
+
+Route::get('/premium-roadmap', [PremiumRoadmapController::class, 'index'])
+    ->middleware('subscription:premium');
+
 
 /*
 |--------------------------------------------------------------------------

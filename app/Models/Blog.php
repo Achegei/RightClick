@@ -13,6 +13,7 @@ class Blog extends Model
         'content',
         'slug',
         'published_at',
+        'tier', // <-- Add tier here
     ];
 
     // Optional: cast published_at to a datetime
@@ -28,9 +29,12 @@ class Blog extends Model
         return $query->whereNotNull('published_at')
                      ->where('published_at', '<=', now());
     }
+
+    /**
+     * Relationship for comments
+     */
     public function comments()
     {
         return $this->morphMany(Comment::class, 'commentable');
     }
-
 }

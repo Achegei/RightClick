@@ -36,14 +36,19 @@ class AuthenticatedSessionController extends Controller
         }
 
         $user = Auth::user();
+        $subscription = $user->subscription;
 
-        // 2️⃣ Redirect based on user tier (MUST return RedirectResponse)
-        return match ($user->tier) {
-            'free'    => redirect()->route('free-roadmap'),
-            'pro'     => redirect()->route('pro-landing'),
-            'premium' => redirect()->route('premium-landing'),
-            default   => redirect()->route('pricing'),
-        };
+        // 2️⃣ Active subscription → redirect by tier
+        if ($subscription && $subscription->isActive()) {
+            return match ($subscription->tier) {
+                'premium' => redirect()->route('premium-roadmap'),
+                'pro'     => redirect()->route('pro-roadmap'),
+                default   => redirect()->route('free-roadmap'),
+            };
+        }
+
+        // 3️⃣ No subscription or expired → Free access
+        return redirect()->route('free-roadmap');
     }
 
     /**

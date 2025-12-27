@@ -116,4 +116,10 @@ class User extends Authenticatable
 {
     return $this->belongsTo(Role::class);
 }
+
+public function subscription()
+{
+    return $this->hasOne(Subscription::class)->latest();
+}
+
 }

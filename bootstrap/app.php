@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'program.access' => \App\Http\Middleware\EnsureProgramAccess::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class, // <-- add this
+            'subscription' => \App\Http\Middleware\SubscriptionAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

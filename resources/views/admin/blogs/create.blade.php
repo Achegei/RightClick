@@ -9,7 +9,7 @@
     <form method="POST" action="{{ route('admin.blogs.store') }}">
         @csrf
 
-        @include('admin.partials.form')
+        @include('admin.blogs.partials.form')
         <button class="bg-blue-600 text-white px-6 py-2 rounded mt-4">
             Save Blog
         </button>
