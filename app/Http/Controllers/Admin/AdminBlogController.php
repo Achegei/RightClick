@@ -12,7 +12,6 @@ class AdminBlogController extends Controller
     public function index()
     {
         $blogs = Blog::latest()->paginate(10);
-
         return view('admin.blogs.index', compact('blogs'));
     }
 
@@ -27,6 +26,7 @@ class AdminBlogController extends Controller
             'title'   => 'required|string|max:255',
             'excerpt' => 'required|string|max:500',
             'content' => 'required|string',
+            'tier'    => 'required|in:free,pro,premium',
             'publish' => 'nullable|boolean',
         ]);
 
@@ -34,6 +34,7 @@ class AdminBlogController extends Controller
             'title'        => $data['title'],
             'excerpt'      => $data['excerpt'],
             'content'      => $data['content'],
+            'tier'         => $data['tier'], // ✅ FIXED
             'slug'         => Str::slug($data['title']),
             'published_at' => $request->boolean('publish') ? now() : null,
         ]);
@@ -54,6 +55,7 @@ class AdminBlogController extends Controller
             'title'   => 'required|string|max:255',
             'excerpt' => 'required|string|max:500',
             'content' => 'required|string',
+            'tier'    => 'required|in:free,pro,premium',
             'publish' => 'nullable|boolean',
         ]);
 
@@ -61,6 +63,7 @@ class AdminBlogController extends Controller
             'title'        => $data['title'],
             'excerpt'      => $data['excerpt'],
             'content'      => $data['content'],
+            'tier'         => $data['tier'], // ✅ FIXED
             'slug'         => Str::slug($data['title']),
             'published_at' => $request->boolean('publish')
                 ? ($blog->published_at ?? now())

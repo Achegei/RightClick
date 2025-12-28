@@ -22,17 +22,24 @@ class AdminBusinessIdeaController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'title' => 'required|string|max:255',
+            'title'   => 'required|string|max:255',
             'summary' => 'required|string|max:1000',
             'content' => 'required|string',
-            'is_premium' => 'sometimes|boolean',
+            'tier'    => 'required|in:free,pro,premium',
             'published' => 'sometimes|boolean',
         ]);
 
-        BusinessIdea::create($data);
+        BusinessIdea::create([
+            'title'     => $data['title'],
+            'summary'   => $data['summary'],
+            'content'   => $data['content'],
+            'tier'      => $data['tier'],          // ✅ IMPORTANT
+            'published' => $request->boolean('published'),
+        ]);
 
-        return redirect()->route('admin.business-ideas.index')
-                         ->with('success', 'Business idea created successfully.');
+        return redirect()
+            ->route('admin.business-ideas.index')
+            ->with('success', 'Business idea created successfully.');
     }
 
     public function edit($id)
@@ -46,24 +53,29 @@ class AdminBusinessIdeaController extends Controller
         $businessIdea = BusinessIdea::findOrFail($id);
 
         $data = $request->validate([
-            'title' => 'required|string|max:255',
+            'title'   => 'required|string|max:255',
             'summary' => 'required|string|max:1000',
             'content' => 'required|string',
-            'is_premium' => 'sometimes|boolean',
+            'tier'    => 'required|in:free,pro,premium',
             'published' => 'sometimes|boolean',
         ]);
 
-        $businessIdea->update($data);
+        $businessIdea->update([
+            'title'     => $data['title'],
+            'summary'   => $data['summary'],
+            'content'   => $data['content'],
+            'tier'      => $data['tier'],          // ✅ IMPORTANT
+            'published' => $request->boolean('published'),
+        ]);
 
-        return redirect()->route('admin.business-ideas.index')
-                         ->with('success', 'Business idea updated successfully.');
+        return redirect()
+            ->route('admin.business-ideas.index')
+            ->with('success', 'Business idea updated successfully.');
     }
 
     public function destroy($id)
     {
-        $businessIdea = BusinessIdea::findOrFail($id);
-        $businessIdea->delete();
-
+        BusinessIdea::findOrFail($id)->delete();
         return back()->with('success', 'Business idea deleted successfully.');
     }
 }

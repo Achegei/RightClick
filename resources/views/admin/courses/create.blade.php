@@ -78,6 +78,24 @@
                           placeholder="Enter course description">{{ old('description') }}</textarea>
             </div>
 
+            {{-- Tier --}}
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">
+                    Access Tier <span class="text-red-500">*</span>
+                </label>
+                <select name="tier"
+                        class="w-full border border-gray-300 rounded px-3 py-2
+                            focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required>
+                    @foreach(['free', 'pro', 'premium'] as $tier)
+                        <option value="{{ $tier }}" {{ old('tier') === $tier ? 'selected' : '' }}>
+                            {{ ucfirst($tier) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+
             {{-- Submit --}}
             <div class="flex justify-end">
                 <button type="submit"

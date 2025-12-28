@@ -40,30 +40,34 @@ class User extends Authenticatable
         ];
     }
 
-    // =========================
-    // ACCESS CONTROL HELPERS
-    // =========================
+    // =====================================
+    // TIER & ACCESS CONTROL (CANONICAL)
+    // =====================================
+
+    public function tier(): string
+    {
+        return $this->account_type ?? 'free';
+    }
 
     public function isFree(): bool
     {
-        return $this->account_type === 'free';
+        return $this->tier() === 'free';
     }
 
     public function isPro(): bool
     {
-        return in_array($this->account_type, ['pro', 'premium']);
+        return in_array($this->tier(), ['pro', 'premium']);
     }
 
     public function isPremium(): bool
     {
-        return $this->account_type === 'premium';
+        return $this->tier() === 'premium';
     }
 
     /**
-     * Generic tier comparison
      * free < pro < premium
      */
-    public function hasAtLeast(string $required): bool
+    public function hasAtLeast(string $requiredTier): bool
     {
         $levels = [
             'free' => 1,
@@ -71,16 +75,31 @@ class User extends Authenticatable
             'premium' => 3,
         ];
 
-        return ($levels[$this->account_type] ?? 0) >= ($levels[$required] ?? 0);
+        return ($levels[$this->tier()] ?? 0) >= ($levels[$requiredTier] ?? 0);
     }
 
-    // =========================
-    // RELATIONSHIPS
-    // =========================
-
     /**
-     * Programs the user is enrolled in
+     * REQUIRED by HasTierAccess trait
      */
+    public function hasActiveSubscription(): bool
+    {
+        return $this->isPro(); // pro or premium
+    }
+
+    // =====================================
+    // RELATIONSHIPS
+    // =====================================
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
     public function programs()
     {
         return $this->belongsToMany(Program::class, 'enrollments')
@@ -88,64 +107,49 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    /**
-     * User enrollments
-     */
     public function enrollments()
     {
         return $this->hasMany(Enrollment::class);
     }
 
-    /**
-     * Payments made by the user
-     */
     public function payments()
     {
         return $this->hasMany(Payment::class);
     }
 
-    /**
-     * Certificates earned
-     */
     public function certificates()
     {
         return $this->hasMany(Certificate::class);
     }
 
-    public function role()
-{
-    return $this->belongsTo(Role::class);
-}
+    // =====================================
+    // CONTENT UNLOCKS (ONE-OFF OVERRIDES)
+    // =====================================
 
-public function subscriptions()
-{
-    return $this->hasMany(Subscription::class);
-}
-
-// app/Models/User.php
-
-public function contentUnlocks()
-{
-    return $this->hasMany(UserContentUnlock::class);
-}
-
-public function hasUnlocked($content)
-{
-    if ($content->tier === 'free') return true;
-
-    // Global tier check if you want to implement full Pro/Premium
-    if (isset($this->tier)) {
-        if ($this->tier === 'pro' && $content->tier === 'pro') return true;
-        if ($this->tier === 'premium') return true;
+    public function contentUnlocks()
+    {
+        return $this->hasMany(UserContentUnlock::class);
     }
 
-    // Individual content unlock
-    return $this->contentUnlocks()
-        ->where('content_type', strtolower(class_basename($content)))
-        ->where('content_id', $content->id)
-        ->exists();
-}
+    /**
+     * Final gatekeeper for any tiered content
+     */
+    public function hasUnlocked($content): bool
+    {
+        // Free content is always accessible
+        if ($content->tier === 'free') {
+            return true;
+        }
 
+        // Tier-based access
+        if ($this->hasAtLeast($content->tier)) {
+            return true;
+        }
 
-
+        // Individual content unlock
+        return $this->contentUnlocks()
+            ->where('content_type', strtolower(class_basename($content)))
+            ->where('content_id', $content->id)
+            ->exists();
+    }
 }
