@@ -24,7 +24,6 @@
     {{-- ========================= --}}
     <section id="roadmap">
         <h2 class="text-3xl font-bold mb-6">🚀 Lessons</h2>
-
         <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
             @forelse($lessons as $lesson)
                 <div class="bg-white p-6 rounded-2xl shadow border hover:shadow-xl transition">
@@ -32,7 +31,6 @@
                     <p class="text-sm text-gray-700">
                         {{ Str::limit(strip_tags($lesson->content), 140) }}
                     </p>
-
                     <span class="inline-block mt-4 text-green-600 font-semibold text-sm">
                         Free
                     </span>
@@ -41,162 +39,117 @@
                 <p class="text-gray-500">No lessons yet.</p>
             @endforelse
         </div>
-
         <div class="mt-6">{{ $lessons->links() }}</div>
     </section>
 
     {{-- ================= --}}
-{{-- BUSINESS IDEAS --}}
-{{-- ================= --}}
-<section>
-    <h2 class="text-3xl font-bold mb-6">💡 Business Ideas</h2>
+    {{-- BUSINESS IDEAS --}}
+    {{-- ================= --}}
+    <section>
+        <h2 class="text-3xl font-bold mb-6">💡 Business Ideas</h2>
+        <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+            @forelse($businessIdeas as $idea)
+                @php $canAccess = $idea->canAccess(auth()->user()); @endphp
+                <div class="relative bg-white p-6 rounded-2xl shadow border hover:shadow-xl transition group">
+                    <h3 class="font-semibold text-lg mb-2">{{ $idea->title }}</h3>
+                    <p class="text-sm text-gray-700 mb-4">
+                        {{ Str::limit(strip_tags($idea->summary ?? $idea->content), $canAccess ? 240 : 120) }}
+                    </p>
 
-    <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-        @forelse($businessIdeas as $idea)
-            @php $canAccess = $idea->canAccess(auth()->user()); @endphp
-
-            <div class="relative bg-white p-6 rounded-2xl shadow border hover:shadow-xl transition group">
-
-                <h3 class="font-semibold text-lg mb-2">{{ $idea->title }}</h3>
-
-                <p class="text-sm text-gray-700 mb-4">
-                    {{ Str::limit(strip_tags($idea->summary ?? $idea->content), $canAccess ? 240 : 120) }}
-                </p>
-
-                @if($canAccess)
-                    {{-- Correctly pass slug for route --}}
-                    <a href="{{ route('business_ideas.show', ['businessIdea' => $idea->slug]) }}"
-                       class="font-semibold text-indigo-600 hover:underline">
-                        Read Full →
-                    </a>
-
-                    <span class="block mt-3 text-green-600 font-semibold text-sm">
-                        {{ ucfirst($idea->tier) }} • Unlocked
-                    </span>
-                @else
-                    {{-- Unlock link --}}
-                    <a href="{{ route('checkout.show', [
-                        'tier' => $idea->tier,
-                        'content_type' => 'business_idea',
-                        'content_id' => $idea->slug
-                    ]) }}"
-                       class="font-semibold text-indigo-600 hover:underline">
-                        Unlock Full Idea →
-                    </a>
-
-                    {{-- LOCK OVERLAY --}}
-                    <div class="absolute inset-0 bg-white/70 backdrop-blur-sm
-                                flex items-center justify-center
-                                opacity-0 group-hover:opacity-100 transition">
-                        <div class="text-center">
-                            <div class="text-indigo-600 text-xl mb-2">🔒</div>
-                            <span class="font-bold text-indigo-700">
-                                Pro Content
-                            </span>
+                    @if($canAccess)
+                        <a href="{{ route('business_ideas.show', ['businessIdea' => $idea->slug]) }}"
+                           class="font-semibold text-indigo-600 hover:underline">
+                            Read Full →
+                        </a>
+                        <span class="block mt-3 text-green-600 font-semibold text-sm">
+                            {{ ucfirst($idea->tier) }} • Unlocked
+                        </span>
+                    @else
+                        <x-locked-button :tier="$idea->tier" :contentType="'business_idea'" :contentId="$idea->slug"/>
+                        <div class="absolute top-0 right-0 p-4 text-indigo-600 text-xl">
+                            🔒
                         </div>
-                    </div>
-                @endif
-            </div>
-        @empty
-            <p class="text-gray-500">No business ideas yet.</p>
-        @endforelse
-    </div>
+                    @endif
+                </div>
+            @empty
+                <p class="text-gray-500">No business ideas yet.</p>
+            @endforelse
+        </div>
+        <div class="mt-6">{{ $businessIdeas->links() }}</div>
+    </section>
 
-    <div class="mt-6">{{ $businessIdeas->links() }}</div>
-</section>
+    {{-- ================= --}}
+    {{-- SUCCESS STORIES --}}
+    {{-- ================= --}}
+    <section class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="mb-6">
+            <a href="{{ url()->previous() }}"
+               class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition">
+                ← Back
+            </a>
+        </div>
 
- {{-- ================= --}}
-{{-- SUCCESS STORIES --}}
-{{-- ================= --}}
-<section class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold mb-6">🌟 Success Stories</h2>
+        <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+            @forelse($successStories as $story)
+                @php $canAccess = $story->canAccess(auth()->user()); @endphp
+                <div class="relative bg-white p-6 rounded-2xl shadow border hover:shadow-xl transition group">
+                    <h3 class="font-semibold text-lg mb-2">{{ $story->title }}</h3>
+                    <p class="text-sm text-gray-700 mb-4">
+                        {{ Str::limit(strip_tags($story->content), $canAccess ? 240 : 120) }}
+                    </p>
 
-    {{-- Back Button --}}
-    <div class="mb-6">
-        <a href="{{ url()->previous() }}"
-           class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition">
-            ← Back
-        </a>
-    </div>
-
-    <h2 class="text-3xl font-bold mb-6">🌟 Success Stories</h2>
-
-    <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-        @forelse($successStories as $story)
-            @php $canAccess = $story->canAccess(auth()->user()); @endphp
-
-            <div class="relative bg-white p-6 rounded-2xl shadow border hover:shadow-xl transition group">
-
-                {{-- Title --}}
-                <h3 class="font-semibold text-lg mb-2">{{ $story->title }}</h3>
-
-                {{-- Snippet --}}
-                <p class="text-sm text-gray-700 mb-4">
-                    {{ Str::limit(strip_tags($story->content), $canAccess ? 240 : 120) }}
-                </p>
-
-                {{-- Action Links --}}
-                @if($canAccess)
-                    <a href="{{ route('success_stories.show', $story->slug) }}"
-                       class="font-semibold text-indigo-600 hover:underline">
-                        Read Full →
-                    </a>
-
-                    <span class="block mt-3 text-green-600 font-semibold text-sm">
-                        {{ ucfirst($story->tier) }} • Unlocked
-                    </span>
-                @else
-                    <a href="{{ route('checkout.show', [
-                        'tier' => $story->tier,
-                        'content_type' => 'success_story',
-                        'content_id' => $story->id
-                    ]) }}"
-                       class="font-semibold text-indigo-600 hover:underline">
-                        Unlock Story →
-                    </a>
-
-                    {{-- LOCK OVERLAY --}}
-                    <div class="absolute inset-0 bg-white/70 backdrop-blur-sm
-                                flex items-center justify-center
-                                opacity-0 group-hover:opacity-100 transition">
-                        <div class="text-center">
-                            <div class="text-indigo-600 text-xl mb-2">🔒</div>
-                            <span class="font-bold text-indigo-700">
-                                {{ ucfirst($story->tier) }} Story
-                            </span>
+                    @if($canAccess)
+                        <a href="{{ route('success_stories.show', $story->slug) }}"
+                           class="font-semibold text-indigo-600 hover:underline">
+                            Read Full →
+                        </a>
+                        <span class="block mt-3 text-green-600 font-semibold text-sm">
+                            {{ ucfirst($story->tier) }} • Unlocked
+                        </span>
+                    @else
+                        <x-locked-button :tier="$story->tier" :contentType="'success_story'" :contentId="$story->id"/>
+                        <div class="absolute top-0 right-0 p-4 text-indigo-600 text-xl">
+                            🔒
                         </div>
-                    </div>
-                @endif
-
-            </div>
-        @empty
-            <p class="text-gray-500">No success stories yet.</p>
-        @endforelse
-    </div>
-
-    {{-- Pagination --}}
-    <div class="mt-6">{{ $successStories->links() }}</div>
-</section>
+                    @endif
+                </div>
+            @empty
+                <p class="text-gray-500">No success stories yet.</p>
+            @endforelse
+        </div>
+        <div class="mt-6">{{ $successStories->links() }}</div>
+    </section>
 
     {{-- ========= --}}
     {{-- VIDEOS --}}
     {{-- ========= --}}
     <section>
         <h2 class="text-3xl font-bold mb-6">🎥 Videos</h2>
-
         <div class="grid md:grid-cols-2 gap-6">
             @forelse($videos as $video)
                 @php $canAccess = $video->canAccess(auth()->user()); @endphp
-
                 <div class="relative rounded-2xl overflow-hidden shadow bg-black group">
                     @if($canAccess)
-                    <iframe class="w-full aspect-video rounded-lg"
-                        src="https://www.youtube.com/embed/{{ $video->youtube_id }}"
-                        title="{{ $video->title }}"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen>
-                    </iframe>
-                @endif
+                        <iframe class="w-full aspect-video rounded-lg"
+                                src="https://www.youtube.com/embed/{{ $video->youtube_id }}"
+                                title="{{ $video->title }}"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                        </iframe>
+                    @else
+                        <div class="relative bg-gray-800 text-white p-4 rounded-lg h-48 flex flex-col justify-center items-center">
+                            <h3 class="font-semibold text-lg mb-2 text-center">{{ $video->title }}</h3>
+                            <p class="text-sm text-gray-200 text-center">
+                                {{ Str::limit(strip_tags($video->description), 100) }}
+                            </p>
+                            <x-locked-button :tier="$video->tier" :contentType="'video'" :contentId="$video->id" class="mt-4"/>
+                            <div class="absolute top-0 right-0 p-4 text-indigo-400 text-xl">
+                                🔒
+                            </div>
+                        </div>
+                    @endif
                 </div>
             @empty
                 <p class="text-gray-500">No videos yet.</p>
@@ -209,18 +162,14 @@
     {{-- ===== --}}
     <section>
         <h2 class="text-3xl font-bold mb-6">📝 Blog Articles</h2>
-
         <div class="grid md:grid-cols-2 gap-6">
             @forelse($blogs as $blog)
                 @php $canAccess = $blog->canAccess(auth()->user()); @endphp
-
                 <div class="relative bg-white p-6 rounded-2xl shadow border hover:shadow-xl transition group">
                     <h3 class="font-semibold text-lg mb-2">{{ $blog->title }}</h3>
-
                     <p class="text-sm text-gray-700 mb-4">
                         {{ Str::limit(strip_tags($blog->content), $canAccess ? 260 : 120) }}
                     </p>
-
                     @if($canAccess)
                         <a href="{{ route('blogs.show', $blog->slug ?? $blog->id) }}"
                            class="font-semibold text-indigo-600 hover:underline">
@@ -230,27 +179,14 @@
                             {{ ucfirst($blog->tier) }} • Unlocked
                         </span>
                     @else
-                        <a href="{{ route('checkout.show', [
-                            'tier' => $blog->tier,
-                            'content_type' => 'blog',
-                            'content_id' => $blog->id
-                        ]) }}"
-                           class="font-semibold text-indigo-600 hover:underline">
-                            Unlock Blog →
-                        </a>
-
-                        <div class="absolute inset-0 bg-white/70 backdrop-blur-sm
-                                    flex items-center justify-center
-                                    opacity-0 group-hover:opacity-100 transition">
-                            <span class="font-bold text-indigo-700">🔒 Pro Article</span>
-                        </div>
+                        <x-locked-button :tier="$blog->tier" :contentType="'blog'" :contentId="$blog->id"/>
+                        <div class="absolute top-0 right-0 p-4 text-indigo-600 text-xl">🔒</div>
                     @endif
                 </div>
             @empty
                 <p class="text-gray-500">No blogs yet.</p>
             @endforelse
         </div>
-
         <div class="mt-6">{{ $blogs->links() }}</div>
     </section>
 
@@ -259,18 +195,14 @@
     {{-- ========= --}}
     <section>
         <h2 class="text-3xl font-bold mb-6">🎓 Programs & Courses</h2>
-
         <div class="grid md:grid-cols-2 gap-6">
             @forelse($programs as $program)
                 @php $canAccess = $program->canAccess(auth()->user()); @endphp
-
                 <div class="relative bg-white p-6 rounded-2xl shadow border hover:shadow-xl transition group">
                     <h3 class="font-semibold text-lg mb-2">{{ $program->name }}</h3>
-
                     <p class="text-gray-700 mb-3">
                         {{ $program->tier === 'free' ? 'Free Program' : 'Paid Program' }}
                     </p>
-
                     @if($canAccess)
                         <a href="{{ route('programs.show', $program->slug ?? $program->id) }}"
                            class="font-semibold text-indigo-600 hover:underline">
@@ -280,27 +212,14 @@
                             {{ ucfirst($program->tier) }} • Unlocked
                         </span>
                     @else
-                        <a href="{{ route('checkout.show', [
-                            'tier' => $program->tier,
-                            'content_type' => 'program',
-                            'content_id' => $program->id
-                        ]) }}"
-                           class="font-semibold text-indigo-600 hover:underline">
-                            Unlock Program →
-                        </a>
-
-                        <div class="absolute inset-0 bg-white/70 backdrop-blur-sm
-                                    flex items-center justify-center
-                                    opacity-0 group-hover:opacity-100 transition">
-                            <span class="font-bold text-indigo-700">🔒 Pro Program</span>
-                        </div>
+                        <x-locked-button :tier="$program->tier" :contentType="'program'" :contentId="$program->id"/>
+                        <div class="absolute top-0 right-0 p-4 text-indigo-600 text-xl">🔒</div>
                     @endif
                 </div>
             @empty
                 <p class="text-gray-500">No programs yet.</p>
             @endforelse
         </div>
-
         <div class="mt-6">{{ $programs->links() }}</div>
     </section>
 
