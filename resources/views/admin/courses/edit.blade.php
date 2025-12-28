@@ -26,6 +26,21 @@
             @csrf
             @method('PUT')
 
+            {{-- Program --}}
+            <div class="mb-4">
+                <label for="program_id" class="block text-gray-700 font-semibold mb-2">Program</label>
+                <select name="program_id" id="program_id" required
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    @foreach($programs as $program)
+                        <option value="{{ $program->id }}" {{ old('program_id', $course->program_id) == $program->id ? 'selected' : '' }}>
+                            {{ $program->title }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('program_id') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Title --}}
             <div class="mb-4">
                 <label for="title" class="block text-gray-700 font-semibold mb-2">Course Title</label>
                 <input type="text" name="title" id="title" 
@@ -34,6 +49,7 @@
                        placeholder="Enter course title" required>
             </div>
 
+            {{-- Description --}}
             <div class="mb-4">
                 <label for="description" class="block text-gray-700 font-semibold mb-2">Description</label>
                 <textarea name="description" id="description" rows="4"

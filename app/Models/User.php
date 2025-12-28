@@ -117,9 +117,35 @@ class User extends Authenticatable
     return $this->belongsTo(Role::class);
 }
 
-public function subscription()
+public function subscriptions()
 {
-    return $this->hasOne(Subscription::class)->latest();
+    return $this->hasMany(Subscription::class);
 }
+
+// app/Models/User.php
+
+public function contentUnlocks()
+{
+    return $this->hasMany(UserContentUnlock::class);
+}
+
+public function hasUnlocked($content)
+{
+    if ($content->tier === 'free') return true;
+
+    // Global tier check if you want to implement full Pro/Premium
+    if (isset($this->tier)) {
+        if ($this->tier === 'pro' && $content->tier === 'pro') return true;
+        if ($this->tier === 'premium') return true;
+    }
+
+    // Individual content unlock
+    return $this->contentUnlocks()
+        ->where('content_type', strtolower(class_basename($content)))
+        ->where('content_id', $content->id)
+        ->exists();
+}
+
+
 
 }

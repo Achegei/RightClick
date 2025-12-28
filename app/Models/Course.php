@@ -2,29 +2,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use App\Models\Concerns\HasTierAccess;
+use App\Models\Program;
+use App\Models\Lesson;
 
 class Course extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTierAccess;
 
     protected $fillable = [
         'program_id',
         'title',
         'slug',
         'description',
-        'is_free',
+        'tier',
     ];
 
-    protected $casts = [
-        'is_free' => 'boolean',
-    ];
-
-    /**
-     * Auto-generate slug if not provided
-     */
     protected static function booted()
     {
         static::creating(function ($course) {
@@ -34,9 +30,6 @@ class Course extends Model
         });
     }
 
-    /**
-     * Relationships
-     */
     public function program()
     {
         return $this->belongsTo(Program::class);

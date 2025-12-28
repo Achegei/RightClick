@@ -16,41 +16,61 @@ class FreeRoadmapController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+
+        /**
+         * Determine accessible tiers
+         */
         $availableTiers = ['free'];
 
         if ($user && $user->subscription?->isActive()) {
-            $availableTiers[] = $user->subscription->tier; // pro or premium
+            $availableTiers[] = $user->subscription->tier;
+
             if ($user->subscription->tier === 'premium') {
-                $availableTiers[] = 'pro'; // premium users get pro content too
+                $availableTiers[] = 'pro';
             }
         }
 
-        // Fetch content by tier
+        /**
+         * Lessons (free + subscribed tiers)
+         */
         $lessons = Lesson::whereIn('tier', $availableTiers)
-                         ->orderBy('order')
-                         ->paginate(6);
+            ->orderBy('order')
+            ->paginate(6);
 
-        $businessIdeas = BusinessIdea::whereIn('tier', $availableTiers)
-                                     ->orderByDesc('created_at')
-                                     ->paginate(6);
+        /**
+         * Business Ideas (PUBLISHED ONLY)
+         * Unlock logic handled in model via canAccess()
+         */
+        $businessIdeas = BusinessIdea::where('status', 'published')
+            ->latest()
+            ->paginate(6);
 
-        $successStories = SuccessStory::whereIn('tier', $availableTiers)
-                                      ->orderByDesc('created_at')
-                                      ->paginate(6);
+        /**
+         * Success Stories (published)
+         */
+        $successStories = SuccessStory::where('status', 'published')
+            ->latest()
+            ->paginate(6);
 
-        $videos = Video::whereIn('tier', $availableTiers)
-                       ->orderByDesc('created_at')
-                       ->take(6)
-                       ->get();
+        /**
+         * Videos (latest 6)
+         */
+        $videos = Video::latest()
+            ->take(6)
+            ->get();
 
-        $blogs = Blog::whereIn('tier', $availableTiers)
-                     ->whereNotNull('published_at')
-                     ->orderByDesc('published_at')
-                     ->paginate(6);
+        /**
+         * Blogs (published)
+         */
+        $blogs = Blog::whereNotNull('published_at')
+            ->latest('published_at')
+            ->paginate(6);
 
-        $programs = Program::whereIn('tier', $availableTiers)
-                           ->orderByDesc('created_at')
-                           ->paginate(6);
+        /**
+         * Programs
+         */
+        $programs = Program::latest()
+            ->paginate(6);
 
         return view('free-roadmap', compact(
             'lessons',

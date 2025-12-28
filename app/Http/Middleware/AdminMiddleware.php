@@ -11,13 +11,9 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check()) {
-            abort(403);
-        }
+        $user = Auth::guard('admin')->user(); // <-- explicitly use admin guard
 
-        $user = Auth::user();
-
-        if (!$user->role || $user->role->name !== 'admin') {
+        if (!$user || $user->role_id !== 1) {
             abort(403, 'Admins only');
         }
 

@@ -21,8 +21,7 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Premium</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tier</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Published</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -31,16 +30,11 @@
                 @forelse($stories as $story)
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $story->title }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $story->author ?? '-' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @if($story->is_premium)
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pro</span>
-                            @else
-                                Free
-                            @endif
+                        <td class="px-6 py-4 whitespace-nowrap capitalize">
+                            {{ $story->tier }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @if($story->published)
+                            @if($story->status === 'published')
                                 <span class="text-green-600 font-semibold">Yes</span>
                             @else
                                 <span class="text-red-600 font-semibold">No</span>
@@ -58,7 +52,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">No success stories found.</td>
+                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">No success stories found.</td>
                     </tr>
                 @endforelse
             </tbody>

@@ -1,9 +1,10 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="max-w-3xl mx-auto py-12 px-6">
-    <h1 class="text-3xl font-bold mb-6">Edit Success Story</h1>
+<div class="max-w-4xl mx-auto py-8">
+    <h1 class="text-2xl font-bold mb-6">Edit Success Story</h1>
 
+    {{-- Display Validation Errors --}}
     @if ($errors->any())
         <div class="mb-4 p-3 bg-red-100 text-red-800 rounded-lg">
             <ul class="list-disc pl-5">
@@ -14,51 +15,67 @@
         </div>
     @endif
 
-    <form action="{{ route('admin.success-stories.update', $successStory) }}" method="POST" enctype="multipart/form-data" class="bg-white shadow-xl rounded-2xl p-8 space-y-6">
+    <form method="POST"
+          action="{{ route('admin.success-stories.update', $successStory->id) }}"
+          class="bg-white p-6 rounded-xl shadow space-y-4" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
+        {{-- Title --}}
         <div>
-            <label class="block font-medium text-gray-700">Title</label>
-            <input type="text" name="title" value="{{ old('title', $successStory->title) }}" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
+            <label class="block font-semibold mb-1">Title</label>
+            <input name="title"
+                   value="{{ old('title', $successStory->title) }}"
+                   class="w-full border p-3 rounded"
+                   required>
         </div>
 
+        {{-- Excerpt --}}
         <div>
-            <label class="block font-medium text-gray-700">Author</label>
-            <input type="text" name="author" value="{{ old('author', $successStory->author) }}" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
+            <label class="block font-semibold mb-1">Excerpt</label>
+            <textarea name="excerpt" rows="3"
+                      class="w-full border p-3 rounded">{{ old('excerpt', $successStory->excerpt) }}</textarea>
         </div>
 
+        {{-- Content --}}
         <div>
-            <label class="block font-medium text-gray-700">Summary</label>
-            <textarea name="summary" rows="2" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">{{ old('summary', $successStory->summary) }}</textarea>
+            <label class="block font-semibold mb-1">Content</label>
+            <textarea name="content" rows="8"
+                      class="w-full border p-3 rounded">{{ old('content', $successStory->content) }}</textarea>
         </div>
 
+        {{-- Featured Image --}}
         <div>
-            <label class="block font-medium text-gray-700">Content</label>
-            <textarea name="content" rows="6" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">{{ old('content', $successStory->content) }}</textarea>
-        </div>
-
-        <div>
-            <label class="block font-medium text-gray-700">Image</label>
-            @if($successStory->image)
-                <img src="{{ asset('storage/'.$successStory->image) }}" class="mb-2 w-32 h-32 object-cover rounded-lg">
+            <label class="block font-semibold mb-1">Featured Image</label>
+            <input type="file" name="featured_image" class="w-full">
+            @if($successStory->featured_image)
+                <img src="{{ asset('storage/'.$successStory->featured_image) }}" class="mt-2 h-24 rounded">
             @endif
-            <input type="file" name="image" class="mt-1 block w-full">
         </div>
 
-        <div class="flex items-center space-x-6">
-            <label class="inline-flex items-center">
-                <input type="checkbox" name="is_premium" class="form-checkbox" value="1" {{ $successStory->is_premium ? 'checked' : '' }}>
-                <span class="ml-2">Premium (Pro Users Only)</span>
-            </label>
+        {{-- Tier --}}
+        <div class="flex gap-6 items-center">
+            <div>
+                <label class="block font-semibold mb-1">Tier</label>
+                <select name="tier" class="border p-3 rounded">
+                    @foreach(['free', 'pro', 'premium'] as $tier)
+                        <option value="{{ $tier }}" @selected($successStory->tier === $tier)>
+                            {{ ucfirst($tier) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
 
-            <label class="inline-flex items-center">
-                <input type="checkbox" name="published" class="form-checkbox" value="1" {{ $successStory->published ? 'checked' : '' }}>
-                <span class="ml-2">Published</span>
+            {{-- Status --}}
+            <label class="flex items-center gap-2 mt-6">
+                <input type="checkbox" name="status" value="published"
+                       @checked($successStory->status === 'published')>
+                Published
             </label>
         </div>
 
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg shadow">
+        {{-- Submit --}}
+        <button class="bg-indigo-600 text-white px-6 py-3 rounded-lg mt-4">
             Update Story
         </button>
     </form>

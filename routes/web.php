@@ -18,10 +18,8 @@ use App\Http\Controllers\Admin\ResourceController;
 use App\Http\Controllers\Admin\VideoController;
 use App\Http\Controllers\Admin\NewsletterSubscriberController;
 use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
-use App\Http\Controllers\Admin\BusinessIdeaController;
-use App\Http\Controllers\Admin\SuccessStoryController;
-
-
+use App\Http\Controllers\Admin\AdminBusinessIdeaController as AdminBusinessIdeaController;
+use App\Http\Controllers\Admin\SuccessStoryController as AdminSuccessStoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +29,7 @@ use App\Http\Controllers\Admin\SuccessStoryController;
 use App\Http\Controllers\Frontend\BlogController;
 use App\Http\Controllers\Frontend\FreeRoadmapController;
 use App\Http\Controllers\Frontend\TestimonialController as FrontendTestimonialController;
+use App\Http\Controllers\Frontend\BusinessIdeaController as FrontendBusinessIdeaController;
 use App\Http\Controllers\Frontend\PricingController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
@@ -39,6 +38,7 @@ use App\Http\Controllers\Admin\CommentController as AdminCommentController;
 use App\Http\Controllers\Frontend\ProgramController;
 use App\Http\Controllers\Frontend\ProRoadmapController;
 use App\Http\Controllers\Frontend\PremiumRoadmapController;
+use App\Http\Controllers\Frontend\SuccessStoryController as FrontendSuccessStoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,10 +47,19 @@ use App\Http\Controllers\Frontend\PremiumRoadmapController;
 */
 Route::view('/', 'welcome')->name('home');
 Route::get('/pricing', [PricingController::class, 'index'])->name('pricing');
+
 Route::prefix('programs')->group(function () {
     Route::get('/', [ProgramController::class, 'index'])->name('program.index');
-    Route::get('/{slug}', [ProgramController::class, 'show'])->name('program.show');
+    Route::get('/{slug}', [ProgramController::class, 'show'])->name('programs.show');
 });
+
+Route::get('/business-ideas', [FrontendBusinessIdeaController::class, 'index'])->name('business_ideas.index');
+Route::get('/business-ideas/{businessIdea:slug}', [FrontendBusinessIdeaController::class, 'show'])->name('business_ideas.show');
+
+Route::get('/success-stories/{successStory:slug}', [FrontendSuccessStoryController::class, 'show'])->name('success_stories.show');
+Route::get('success-stories', [FrontendSuccessStoryController::class, 'index'])->name('success_stories.index');
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -60,6 +69,7 @@ Route::prefix('programs')->group(function () {
 Route::get('/free-roadmap', [FreeRoadmapController::class, 'index'])->name('free-roadmap');
 Route::post('/free-roadmap/subscribe', [FreeRoadmapController::class, 'subscribeNewsletter'])->name('free-roadmap.subscribe');
 Route::middleware('auth')->post('/free-roadmap/complete', [FreeRoadmapController::class, 'markCompleted'])->name('free-roadmap.complete');
+
 /*
 |--------------------------------------------------------------------------
 | 3. BLOG ROUTES (FRONTEND)
@@ -88,12 +98,8 @@ Route::prefix('checkout')->group(function () {
     Route::post('{tier}/payment', [CheckoutController::class, 'submitPayment'])->name('checkout.payment.submit');
 });
 
-Route::get('/pro-roadmap', [ProRoadmapController::class, 'index'])
-    ->middleware('subscription:pro');
-
-Route::get('/premium-roadmap', [PremiumRoadmapController::class, 'index'])
-    ->middleware('subscription:premium');
-
+Route::get('/pro-roadmap', [ProRoadmapController::class, 'index'])->middleware('subscription:pro');
+Route::get('/premium-roadmap', [PremiumRoadmapController::class, 'index'])->middleware('subscription:premium');
 
 /*
 |--------------------------------------------------------------------------
@@ -104,10 +110,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::post('/comments', [CommentController::class, 'store'])
-        ->name('comments.store');
-    Route::get('comments', [Admin\CommentController::class, 'index'])->name('comments.index');
 
+    // Comments
+    Route::post('/comments', [AdminCommentController::class, 'store'])->name('comments.store');
+    Route::get('/comments', [AdminCommentController::class, 'index'])->name('comments.index');
 
     // Profile management
     Route::prefix('profile')->name('profile.')->group(function () {
@@ -136,23 +142,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     /*
     |--------------------------------------------------
-    | Admin Authenticated
+    | Admin Authenticated (protected panel)
     |--------------------------------------------------
     */
+    Route::middleware(['auth:admin', 'admin'])->group(function () {
 
-    Route::prefix('admin')->name('admin.')->middleware(['auth', 'can:access-admin-panel'])->group(function () {
-    Route::resource('success-stories', Admin\SuccessStoryController::class);
-});
-
-    Route::middleware('auth:admin')->group(function () {
-
-        // Logout
+        // Dashboard & Logout
+        Route::get('dashboard', [AdminController::class, 'index'])->name('dashboard');
         Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
 
-        // Dashboard
-        Route::get('dashboard', [AdminController::class, 'index'])->name('dashboard');
-
-        // Resources
+        // Admin resources
         Route::resources([
             'programs' => AdminProgramController::class,
             'courses' => AdminCourseController::class,
@@ -162,29 +161,24 @@ Route::prefix('admin')->name('admin.')->group(function () {
             'blogs' => AdminBlogController::class,
             'resources' => ResourceController::class,
             'testimonials' => AdminTestimonialController::class,
-            'business-ideas' => BusinessIdeaController::class,
-            'success-stories' => SuccessStoryController::class,
+            'business-ideas' => AdminBusinessIdeaController::class,
+            'success-stories' => AdminSuccessStoryController::class,
+            'newsletter-subscribers' => NewsletterSubscriberController::class,
         ]);
 
-        // Newsletter subscribers
-        Route::resource('newsletter-subscribers', NewsletterSubscriberController::class)->only(['index', 'destroy']);
-
-        // Testimonial approval toggle
+        // Testimonial approval
         Route::post('testimonials/{testimonial}/toggle-approval', [AdminTestimonialController::class, 'toggleApproval'])
             ->name('testimonials.toggleApproval');
 
-        Route::resource('business-ideas', BusinessIdeaController::class);
-
-
-        // Default admin redirect
-        Route::get('/', fn () => redirect()->route('admin.dashboard'));
-
+        // Comments management
         Route::prefix('comments')->group(function () {
             Route::get('/', [AdminCommentController::class, 'index'])->name('comments.index');
             Route::post('{comment}/approve', [AdminCommentController::class, 'approve'])->name('comments.approve');
             Route::delete('{comment}', [AdminCommentController::class, 'destroy'])->name('comments.destroy');
         });
 
+        // Default admin redirect
+        Route::get('/', fn () => redirect()->route('admin.dashboard'));
     });
 });
 

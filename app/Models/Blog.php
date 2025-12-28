@@ -2,37 +2,34 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasTierAccess;
+use App\Models\Comment; // Make sure Comment model exists and is imported
 
 class Blog extends Model
 {
-    // Allow mass assignment for these fields
+    use HasFactory, HasTierAccess;
+
     protected $fillable = [
         'title',
         'excerpt',
         'content',
         'slug',
         'published_at',
-        'tier', // <-- Add tier here
+        'tier',
     ];
 
-    // Optional: cast published_at to a datetime
     protected $casts = [
         'published_at' => 'datetime',
     ];
 
-    /**
-     * Scope to only published blogs
-     */
     public function scopePublished($query)
     {
         return $query->whereNotNull('published_at')
                      ->where('published_at', '<=', now());
     }
 
-    /**
-     * Relationship for comments
-     */
     public function comments()
     {
         return $this->morphMany(Comment::class, 'commentable');

@@ -21,54 +21,62 @@ class SuccessStoryController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'title'        => 'required|string|max:255',
-            'author'       => 'nullable|string|max:255',
-            'summary'      => 'nullable|string|max:1000',
-            'content'      => 'required|string',
-            'image'        => 'nullable|image|max:2048',
-            'is_premium'   => 'sometimes|boolean',
-            'published'    => 'sometimes|boolean',
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'excerpt' => 'required|string',
+            'content' => 'required|string',
+            'status' => 'required',
+            'tier' => 'required',
         ]);
 
-        if($request->hasFile('image')){
-            $data['image'] = $request->file('image')->store('success-stories', 'public');
-        }
+        $story = new SuccessStory();
+        $story->title = $request->title;
+        $story->excerpt = $request->excerpt;
+        $story->content = $request->content;
+        $story->status = $request->status;
+        $story->tier = $request->tier;
+        $story->save(); // slug not needed for admin
 
-        SuccessStory::create($data);
-
-        return redirect()->route('admin.success-stories.index')->with('success', 'Success story created.');
+        return redirect()->route('admin.success-stories.index')
+                         ->with('success', 'Story created!');
     }
 
-    public function edit(SuccessStory $successStory)
+    // Fetch by ID instead of route-model binding
+    public function edit($id)
     {
+        $successStory = SuccessStory::findOrFail($id);
         return view('admin.success-stories.edit', compact('successStory'));
     }
 
-    public function update(Request $request, SuccessStory $successStory)
+    public function update(Request $request, $id)
     {
+        $successStory = SuccessStory::findOrFail($id);
+
         $data = $request->validate([
-            'title'        => 'required|string|max:255',
-            'author'       => 'nullable|string|max:255',
-            'summary'      => 'nullable|string|max:1000',
-            'content'      => 'required|string',
-            'image'        => 'nullable|image|max:2048',
-            'is_premium'   => 'sometimes|boolean',
-            'published'    => 'sometimes|boolean',
+            'title'         => 'required|string|max:255',
+            'excerpt'       => 'nullable|string|max:1000',
+            'content'       => 'required|string',
+            'featured_image'=> 'nullable|image|max:2048',
+            'status'        => 'nullable|in:published,draft',
+            'tier'          => 'required|in:free,pro,premium',
         ]);
 
-        if($request->hasFile('image')){
-            $data['image'] = $request->file('image')->store('success-stories', 'public');
+        if ($request->hasFile('featured_image')) {
+            $data['featured_image'] = $request->file('featured_image')
+                                             ->store('success-stories', 'public');
         }
 
         $successStory->update($data);
 
-        return redirect()->route('admin.success-stories.index')->with('success', 'Success story updated.');
+        return redirect()->route('admin.success-stories.index')
+                         ->with('success', 'Success story updated.');
     }
 
-    public function destroy(SuccessStory $successStory)
+    public function destroy($id)
     {
+        $successStory = SuccessStory::findOrFail($id);
         $successStory->delete();
+
         return back()->with('success', 'Success story deleted.');
     }
 }

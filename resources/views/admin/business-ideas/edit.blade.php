@@ -1,40 +1,69 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="max-w-4xl mx-auto py-8">
-    <h1 class="text-2xl font-bold mb-6">Edit Business Idea</h1>
+<div class="max-w-3xl mx-auto py-12 px-6">
+    <h1 class="text-3xl font-bold mb-6">Edit Business Idea</h1>
 
-    <form method="POST"
-          action="{{ route('admin.business-ideas.update', $businessIdea) }}"
-          class="bg-white p-6 rounded-xl shadow space-y-4">
-        @csrf @method('PUT')
+    {{-- Display Validation Errors --}}
+    @if ($errors->any())
+        <div class="mb-4 p-3 bg-red-100 text-red-800 rounded-lg">
+            <ul class="list-disc pl-5">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-        <input name="title"
-               value="{{ $businessIdea->title }}"
-               class="w-full border p-3 rounded" required>
+    <form action="{{ route('admin.business-ideas.update', $businessIdea->id) }}" method="POST" class="bg-white shadow-xl rounded-2xl p-8 space-y-6">
+        @csrf
+        @method('PUT')
 
-        <textarea name="summary" rows="3"
-                  class="w-full border p-3 rounded">{{ $businessIdea->summary }}</textarea>
+        {{-- Title --}}
+        <div>
+            <label class="block font-medium text-gray-700">Title</label>
+            <input type="text" name="title" value="{{ old('title', $businessIdea->title) }}" required
+                   class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
+        </div>
 
-        <textarea name="content" rows="8"
-                  class="w-full border p-3 rounded">{{ $businessIdea->content }}</textarea>
+        {{-- Summary --}}
+        <div>
+            <label class="block font-medium text-gray-700">Summary</label>
+            <textarea name="summary" rows="3" required
+                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">{{ old('summary', $businessIdea->summary) }}</textarea>
+        </div>
 
-        <div class="flex gap-6">
-            <label class="flex items-center gap-2">
-                <input type="checkbox" name="is_premium" value="1"
-                       @checked($businessIdea->is_premium)>
-                Premium
-            </label>
+        {{-- Content --}}
+        <div>
+            <label class="block font-medium text-gray-700">Content</label>
+            <textarea name="content" rows="6" required
+                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">{{ old('content', $businessIdea->content) }}</textarea>
+        </div>
 
-            <label class="flex items-center gap-2">
+        {{-- Tier --}}
+        <div>
+            <label class="block font-medium text-gray-700">Tier</label>
+            <select name="tier" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
+                @foreach(['free', 'pro', 'premium'] as $tier)
+                    <option value="{{ $tier }}" {{ old('tier', $businessIdea->tier) === $tier ? 'selected' : '' }}>
+                        {{ ucfirst($tier) }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- Status --}}
+        <div class="flex items-center space-x-6">
+            <label class="inline-flex items-center">
                 <input type="checkbox" name="published" value="1"
-                       @checked($businessIdea->published)>
-                Published
+                       class="form-checkbox" {{ old('published', $businessIdea->published) ? 'checked' : '' }}>
+                <span class="ml-2">Published</span>
             </label>
         </div>
 
-        <button class="bg-indigo-600 text-white px-6 py-3 rounded-lg">
-            Update
+        {{-- Submit --}}
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg shadow">
+            Update Idea
         </button>
     </form>
 </div>
