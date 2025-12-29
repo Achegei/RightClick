@@ -7,7 +7,7 @@
 
     {{-- Back to Programs --}}
     <div class="mb-6">
-        <a href="{{ route('admin.programs.index') }}" 
+        <a href="{{ route('free-roadmap') }}" 
            class="text-indigo-600 hover:text-indigo-800 font-semibold text-sm inline-flex items-center">
             &larr; Back to Programs
         </a>
