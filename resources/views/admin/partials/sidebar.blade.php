@@ -51,3 +51,8 @@
    class="flex items-center px-4 py-2 rounded-lg transition {{ navClass('admin.blogs.*') }}">
    Success Stories
 </a>
+
+<a href="{{ route('admin.lessons.index') }}"
+   class="flex items-center px-4 py-2 rounded-lg transition {{ navClass('admin.blogs.*') }}">
+   Lessons
+</a>

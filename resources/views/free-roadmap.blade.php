@@ -191,37 +191,86 @@
     </section>
 
     {{-- ========= --}}
-    {{-- PROGRAMS --}}
-    {{-- ========= --}}
-    <section>
-        <h2 class="text-3xl font-bold mb-6">🎓 Programs & Courses</h2>
-        <div class="grid md:grid-cols-2 gap-6">
-            @forelse($programs as $program)
-                @php $canAccess = $program->canAccess(auth()->user()); @endphp
-                <div class="relative bg-white p-6 rounded-2xl shadow border hover:shadow-xl transition group">
-                    <h3 class="font-semibold text-lg mb-2">{{ $program->name }}</h3>
-                    <p class="text-gray-700 mb-3">
-                        {{ $program->tier === 'free' ? 'Free Program' : 'Paid Program' }}
-                    </p>
-                    @if($canAccess)
-                        <a href="{{ route('programs.show', $program->slug ?? $program->id) }}"
-                           class="font-semibold text-indigo-600 hover:underline">
-                            View Program →
-                        </a>
-                        <span class="block mt-3 text-green-600 font-semibold text-sm">
-                            {{ ucfirst($program->tier) }} • Unlocked
-                        </span>
-                    @else
-                        <x-locked-button :tier="$program->tier" :contentType="'program'" :contentId="$program->id"/>
-                        <div class="absolute top-0 right-0 p-4 text-indigo-600 text-xl">🔒</div>
-                    @endif
-                </div>
-            @empty
-                <p class="text-gray-500">No programs yet.</p>
-            @endforelse
-        </div>
-        <div class="mt-6">{{ $programs->links() }}</div>
-    </section>
+{{-- PROGRAMS & COURSES --}}
+{{-- ========= --}}
+<section>
+    <h2 class="text-3xl font-bold mb-6">🎓 Programs & Courses</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+        @forelse($programs as $program)
+            @php $canAccess = $program->canAccess(auth()->user()); @endphp
+            <div class="relative bg-white p-6 rounded-2xl shadow border hover:shadow-xl transition group">
+                <h3 class="font-semibold text-lg mb-2">{{ $program->name }}</h3>
+                <p class="text-gray-700 mb-3">
+                    {{ $program->tier === 'free' ? 'Free Program' : 'Paid Program' }}
+                </p>
+
+                {{-- Courses under program --}}
+                @if($program->courses->count())
+                    <ul class="mb-4 space-y-2">
+                        @foreach($program->courses as $course)
+                            @php $courseAccess = $course->canAccess(auth()->user()); @endphp
+                            <li class="bg-gray-50 p-4 rounded-lg shadow-inner hover:bg-gray-100 transition">
+                                <h4 class="font-semibold text-md mb-1">{{ $course->title }}</h4>
+                                <p class="text-sm text-gray-700 mb-2">
+                                    {!! \Illuminate\Support\Str::words(strip_tags($course->description), 40, '...') !!}
+                                    @if($course->description && $course->description !== strip_tags($course->description))
+                                        <a href="{{ route('courses.show', $course->slug ?? $course->id) }}"
+                                           class="text-indigo-600 font-semibold hover:underline">
+                                           Read Full →
+                                        </a>
+                                    @endif
+                                </p>
+                                <span class="inline-block mt-1 text-sm text-green-600 font-semibold">
+                                    {{ ucfirst($course->tier) }}
+                                </span>
+
+                                {{-- Lessons under course --}}
+                                @if($course->lessons->count())
+                                    <ul class="mt-3 space-y-2 pl-4">
+                                        @foreach($course->lessons as $lesson)
+                                            <li class="border-l-2 border-indigo-200 pl-3">
+                                                <h5 class="font-medium text-sm mb-1">{{ $lesson->title }}</h5>
+                                                <p class="text-xs text-gray-700">
+                                                    {!! \Illuminate\Support\Str::words(strip_tags($lesson->content), 30, '...') !!}
+                                                    @if($lesson->content && $lesson->content !== strip_tags($lesson->content))
+                                                        <a href="{{ route('lessons.show', $lesson->id) }}"
+                                                           class="text-indigo-600 font-semibold hover:underline">
+                                                           Read Full →
+                                                        </a>
+                                                    @endif
+                                                </p>
+                                                <span class="inline-block mt-1 text-xs text-green-600 font-semibold">
+                                                    {{ ucfirst($lesson->tier) }}
+                                                </span>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+
+                @if($canAccess)
+                    <a href="{{ route('programs.show', $program->slug ?? $program->id) }}"
+                       class="font-semibold text-indigo-600 hover:underline">
+                        View Program →
+                    </a>
+                    <span class="block mt-3 text-green-600 font-semibold text-sm">
+                        {{ ucfirst($program->tier) }} • Unlocked
+                    </span>
+                @else
+                    <x-locked-button :tier="$program->tier" :contentType="'program'" :contentId="$program->id"/>
+                    <div class="absolute top-0 right-0 p-4 text-indigo-600 text-xl">🔒</div>
+                @endif
+            </div>
+        @empty
+            <p class="text-gray-500">No programs yet.</p>
+        @endforelse
+    </div>
+    <div class="mt-6">{{ $programs->links() }}</div>
+</section>
+
 
     {{-- CTA --}}
     <section class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-14 rounded-3xl text-center shadow-xl">

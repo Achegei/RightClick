@@ -20,7 +20,7 @@ class AdminCourseController extends Controller
 
     public function create()
     {
-        $programs = Program::orderBy('name')->get(); // <-- order by 'name' column
+        $programs = Program::orderBy('name')->get();
         return view('admin.courses.create', compact('programs'));
     }
 
@@ -30,9 +30,10 @@ class AdminCourseController extends Controller
             'program_id' => ['required', 'exists:programs,id'],
             'title'      => ['required', 'string', 'max:255'],
             'description'=> ['nullable', 'string'],
+            'tier'       => ['required', 'in:free,pro,premium'], // ✅ validate tier
         ]);
 
-        Course::create($data);
+        Course::create($data); // ✅ includes tier
 
         return redirect()
             ->route('admin.courses.index')
@@ -51,9 +52,10 @@ class AdminCourseController extends Controller
             'program_id' => ['required', 'exists:programs,id'],
             'title'      => ['required', 'string', 'max:255'],
             'description'=> ['nullable', 'string'],
+            'tier'       => ['required', 'in:free,pro,premium'], // ✅ validate tier
         ]);
 
-        $course->update($data);
+        $course->update($data); // ✅ update tier
 
         return redirect()
             ->route('admin.courses.index')

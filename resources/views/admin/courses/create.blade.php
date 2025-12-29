@@ -44,7 +44,7 @@
                     @foreach($programs as $program)
                         <option value="{{ $program->id }}"
                             {{ old('program_id') == $program->id ? 'selected' : '' }}>
-                            {{ $program->name }}
+                            {{ $program->name }} ({{ ucfirst($program->tier) }})
                         </option>
                     @endforeach
                 </select>
@@ -82,6 +82,7 @@
             <div class="mb-4">
                 <label class="block text-gray-700 font-semibold mb-2">
                     Access Tier <span class="text-red-500">*</span>
+                    <span class="text-sm text-gray-500 italic ml-2">Select the tier that controls access for this course.</span>
                 </label>
                 <select name="tier"
                         class="w-full border border-gray-300 rounded px-3 py-2
@@ -94,7 +95,6 @@
                     @endforeach
                 </select>
             </div>
-
 
             {{-- Submit --}}
             <div class="flex justify-end">

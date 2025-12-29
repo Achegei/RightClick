@@ -22,15 +22,17 @@ class AdminProgramController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
+        $data = $request->validate([
+            'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
+            'tier'        => 'required|in:free,pro,premium',  // ✅ validate tier
         ]);
 
         Program::create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'slug' => Str::slug($request->name),
+            'name'        => $data['name'],
+            'description' => $data['description'] ?? null,
+            'slug'        => Str::slug($data['name']),
+            'tier'        => $data['tier'],                   // ✅ save tier
         ]);
 
         return redirect()
@@ -45,15 +47,17 @@ class AdminProgramController extends Controller
 
     public function update(Request $request, Program $program)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
+        $data = $request->validate([
+            'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
+            'tier'        => 'required|in:free,pro,premium',  // ✅ validate tier
         ]);
 
         $program->update([
-            'name' => $request->name,
-            'description' => $request->description,
-            'slug' => Str::slug($request->name),
+            'name'        => $data['name'],
+            'description' => $data['description'] ?? null,
+            'slug'        => Str::slug($data['name']),
+            'tier'        => $data['tier'],                   // ✅ update tier
         ]);
 
         return redirect()
