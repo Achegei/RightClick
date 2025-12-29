@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Payment;
+use Carbon\Carbon;
 
 class User extends Authenticatable
 {
@@ -32,21 +34,24 @@ class User extends Authenticatable
     /**
      * Attribute casting
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
 
     // =====================================
     // TIER & ACCESS CONTROL (CANONICAL)
     // =====================================
 
+    /**
+     * Returns the currently active tier for the user.
+     * Falls back to `account_type`, then 'free'.
+     */
     public function tier(): string
     {
-        return $this->account_type ?? 'free';
+        $tier = $this->activeTier();
+
+        return $tier ?? $this->account_type ?? 'free';
     }
 
     public function isFree(): bool
@@ -79,11 +84,52 @@ class User extends Authenticatable
     }
 
     /**
-     * REQUIRED by HasTierAccess trait
+     * Returns true if user has a paid active subscription
      */
     public function hasActiveSubscription(): bool
     {
         return $this->isPro(); // pro or premium
+    }
+
+    // =====================================
+    // PAYMENTS & SUBSCRIPTION LOGIC
+    // =====================================
+
+    /**
+     * All payments by user
+     */
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Latest payment that has a valid subscription period
+     */
+    public function latestPayment()
+    {
+        return $this->hasOne(Payment::class)
+            ->whereNotNull('subscription_started_at')
+            ->latest('subscription_started_at');
+    }
+
+    /**
+     * Determine the currently active tier from payments
+     */
+    public function activeTier(): ?string
+    {
+        $payment = $this->latestPayment;
+
+        if (!$payment) {
+            return null;
+        }
+
+        // Check if subscription is still valid
+        if ($payment->subscription_expires_at && Carbon::parse($payment->subscription_expires_at)->isFuture()) {
+            return $payment->tier;
+        }
+
+        return null;
     }
 
     // =====================================
@@ -93,11 +139,6 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class);
-    }
-
-    public function subscriptions()
-    {
-        return $this->hasMany(Subscription::class);
     }
 
     public function programs()
@@ -110,11 +151,6 @@ class User extends Authenticatable
     public function enrollments()
     {
         return $this->hasMany(Enrollment::class);
-    }
-
-    public function payments()
-    {
-        return $this->hasMany(Payment::class);
     }
 
     public function certificates()

@@ -32,24 +32,24 @@ class SuccessStory extends Model
         return false; // not logged in can't access pro/premium
     }
 
-    $subscription = $user->subscriptions()->latest()->first();
+    // Use existing helper methods
+    $activeTier = $user->activeTier(); // 'free', 'pro', 'premium'
+    $hasSubscription = $user->hasActiveSubscription(); // boolean
 
-    if (!$subscription) {
+    if (!$hasSubscription) {
         return false;
     }
 
-    if ($tier === 'pro' && $subscription->plan === 'pro') {
+    // Access rules
+    if ($tier === 'pro' && in_array($activeTier, ['pro', 'premium'])) {
         return true;
     }
 
-    if ($tier === 'premium' && $subscription->plan === 'premium') {
-        return true;
-    }
-
-    if ($tier === 'pro' && $subscription->plan === 'premium') {
+    if ($tier === 'premium' && $activeTier === 'premium') {
         return true;
     }
 
     return false;
 }
+
 }

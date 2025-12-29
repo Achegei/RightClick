@@ -35,4 +35,16 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | IntaSend (Payments)
+    |--------------------------------------------------------------------------
+    */
+    'intasend' => [
+        'publishable' => env('INTASEND_PUBLISHABLE_KEY'),
+        'secret'      => env('INTASEND_SECRET_KEY'),
+        'test'        => env('INTASEND_TEST_MODE', true),
+    ],
+
+
 ];

@@ -3,102 +3,125 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Payment;
 use Illuminate\Support\Facades\Auth;
-use IntaSend\IntaSendPHP\Collection;
+use App\Models\Payment;
+use App\Models\Tier;
+use IntaSend\IntaSendPHP\Checkout;
+use IntaSend\IntaSendPHP\Customer;
 
 class CheckoutController extends Controller
 {
-    protected array $tiers = [
-        'pro' => ['title' => 'Pro Tier', 'price' => 1999],
-        'premium' => ['title' => 'Premium Tier', 'price' => 4999],
-    ];
-
-    // Show checkout landing page
-    public function show(string $tier)
+    /**
+     * Show the checkout page for a tier
+     */
+    public function show(string $tierSlug)
     {
-        abort_unless(isset($this->tiers[$tier]), 404);
+        $tier = Tier::where('slug', $tierSlug)->firstOrFail();
 
         return view('checkout.show', [
-            'tier' => $tier,
-            'tierData' => $this->tiers[$tier],
+            'tier'     => $tierSlug,
+            'tierData' => $tier,
         ]);
     }
 
-    // Initiate IntaSend payment (AJAX)
-    public function submitPayment(Request $request, string $tier)
+    /**
+     * Handle payment submission
+     */
+    public function pay(Request $request, string $tierSlug)
     {
-        abort_unless(isset($this->tiers[$tier]), 404);
-
-        $request->validate([
-            'phone' => 'required|string|max:12',
-        ]);
-
         $user = Auth::user();
-        $apiRef = 'user'.$user->id.'-tier-'.$tier.'-'.time();
-
-        $payment = Payment::create([
-            'user_id' => $user->id,
-            'amount' => $this->tiers[$tier]['price'],
-            'provider' => 'intasend',
-            'status' => 'pending',
-            'api_ref' => $apiRef,
-            'metadata' => json_encode(['tier' => $tier])
-        ]);
-
-        $collection = new Collection();
-        $collection->init([
-            'publishable_key' => env('INTASEND_PUBLISHABLE_KEY'),
-            'token' => env('INTASEND_SECRET_KEY')
-        ]);
-
-        try {
-            $response = $collection->mpesa_stk_push(
-                $this->tiers[$tier]['price'],
-                $request->phone,
-                $apiRef
-            );
-
-            if (!isset($response->invoice) || !isset($response->invoice->invoice_id)) {
-                $payment->update(['status' => 'failed']);
-                return response()->json(['status' => 'failed']);
-            }
-
-            $payment->update([
-                'payment_id' => $response->invoice->invoice_id,
-                'payload' => json_encode($response)
-            ]);
-
-            return response()->json([
-                'status' => 'pending',
-                'payment_id' => $payment->id
-            ]);
-
-        } catch (\Exception $e) {
-            $payment->update(['status' => 'failed']);
-            return response()->json(['status' => 'failed']);
+        if (!$user) {
+            return redirect()->route('login');
         }
+
+        $tier = Tier::where('slug', $tierSlug)->firstOrFail();
+
+        $apiRef = "tier-user{$user->id}-{$tierSlug}-" . time();
+
+        // Create local payment record
+        $payment = Payment::create([
+            'user_id'   => $user->id,
+            'amount'    => $tier->price,
+            'payment_provider' => 'intasend',
+            'status'    => 'pending',
+            'api_ref'   => $apiRef,
+            'reference' => 'REF-' . strtoupper(uniqid()),
+            'tier'      => $tierSlug,
+        ]);
+
+        // Build Customer object
+        $customer = new Customer();
+        $customer->first_name = $user->name;
+        $customer->last_name  = $user->name;
+        $customer->email      = $user->email;
+        $customer->country    = 'KE';
+
+        // Initialize IntaSend checkout
+        $checkout = new Checkout();
+        $checkout->init([
+            'token'           => config('services.intasend.secret'),
+            'publishable_key' => config('services.intasend.publishable'),
+            'test'            => config('services.intasend.test'),
+        ]);
+
+        $host = config('app.url');
+        $redirectUrl = $host . route('checkout.complete', ['tier' => $tierSlug], false);
+
+        // Create hosted checkout
+        $response = $checkout->create(
+            $tier->price,
+            'KES',
+            $customer,
+            $host,
+            $redirectUrl,
+            $apiRef,
+            null,
+            "M-PESA"
+        );
+
+        // Update payment with IntaSend response
+        $payment->update([
+            'payment_id' => $response->invoice->invoice_id ?? null,
+            'payload'    => json_encode($response),
+        ]);
+
+        // Redirect user to IntaSend checkout
+        return redirect($response->url);
     }
 
-    // Polling endpoint for frontend
-    public function checkStatus(Payment $payment)
+    /**
+     * IntaSend redirect after payment
+     */
+    public function complete(string $tierSlug)
     {
-        $collection = new Collection();
-        $collection->init([
-            'publishable_key' => env('INTASEND_PUBLISHABLE_KEY'),
-            'token' => env('INTASEND_SECRET_KEY')
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        // Find latest payment for this tier
+        $payment = Payment::where('user_id', $user->id)
+            ->where('tier', $tierSlug)
+            ->latest()
+            ->first();
+
+        if (!$payment || $payment->status !== 'pending') {
+            abort(404, 'Payment not found or already completed.');
+        }
+
+        // Mark payment as successful
+        $payment->update([
+            'status'                  => 'paid',
+            'paid_at'                 => now(),
+            'subscription_started_at' => now(),
+            'subscription_expires_at' => now()->addYear(),
         ]);
 
-        try {
-            $response = $collection->status($payment->payment_id);
-            if (isset($response->state)) {
-                if ($response->state === 'COMPLETE') $payment->update(['status' => 'success']);
-                if ($response->state === 'FAILED') $payment->update(['status' => 'failed']);
-            }
-
-            return response()->json(['status' => $payment->status]);
-        } catch (\Exception $e) {
-            return response()->json(['status' => $payment->status]);
-        }
+        // Redirect based on tier
+        return match ($tierSlug) {
+            'premium' => redirect()->route('roadmap.premium'),
+            'pro'     => redirect()->route('roadmap.pro'),
+            default   => redirect()->route('free-roadmap'),
+        };
     }
 }

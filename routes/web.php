@@ -20,6 +20,8 @@ use App\Http\Controllers\Admin\NewsletterSubscriberController;
 use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
 use App\Http\Controllers\Admin\AdminBusinessIdeaController as AdminBusinessIdeaController;
 use App\Http\Controllers\Admin\SuccessStoryController as AdminSuccessStoryController;
+use App\Http\Controllers\Payments\IntaSendWebhookController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +41,7 @@ use App\Http\Controllers\Frontend\ProgramController;
 use App\Http\Controllers\Frontend\ProRoadmapController;
 use App\Http\Controllers\Frontend\PremiumRoadmapController;
 use App\Http\Controllers\Frontend\SuccessStoryController as FrontendSuccessStoryController;
+use App\Http\Controllers\Frontend\RoadmapController;
 
 /*
 |--------------------------------------------------------------------------
@@ -92,15 +95,16 @@ Route::post('/testimonials', [FrontendTestimonialController::class, 'store'])->n
 | 5. CHECKOUT & PAYMENTS
 |--------------------------------------------------------------------------
 */
-Route::prefix('checkout')->group(function () {
+Route::middleware(['auth'])->prefix('checkout')->group(function () {
     Route::get('{tier}', [CheckoutController::class, 'show'])->name('checkout.show');
-    Route::get('{tier}/payment', [CheckoutController::class, 'paymentForm'])->name('checkout.payment');
-    Route::post('{tier}/payment', [CheckoutController::class, 'submitPayment'])->name('checkout.payment.submit');
+    Route::post('{tier}/pay', [CheckoutController::class, 'pay'])->name('checkout.pay');
+    Route::get('{tier}/complete', [CheckoutController::class, 'complete'])->name('checkout.complete');
 });
 
-Route::get('/pro-roadmap', [ProRoadmapController::class, 'index'])->middleware('subscription:pro');
-Route::get('/premium-roadmap', [PremiumRoadmapController::class, 'index'])->middleware('subscription:premium');
 
+// IntaSend webhook (No auth, No CSRF)
+Route::post('/webhook/intasend', [IntaSendWebhookController::class, 'handleIntaSend'])
+    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 /*
 |--------------------------------------------------------------------------
 | 6. AUTHENTICATED USER ROUTES
@@ -121,6 +125,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/', [ProfileController::class, 'update'])->name('update');
         Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
     });
+    // PRO Roadmap (pro + premium users)
+    Route::get('/roadmap/pro', [RoadmapController::class, 'pro'])
+        ->name('roadmap.pro');
+
+    // PREMIUM Roadmap (premium users only)
+    Route::get('/roadmap/premium', [RoadmapController::class, 'premium'])
+        ->name('roadmap.premium');
 });
 
 /*
@@ -156,14 +167,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             'programs' => AdminProgramController::class,
             'courses' => AdminCourseController::class,
             'users' => AdminUserController::class,
-            'lessons' => LessonController::class,
+            //'lessons' => LessonController::class,
             'videos' => VideoController::class,
             'blogs' => AdminBlogController::class,
-            'resources' => ResourceController::class,
+            //'resources' => ResourceController::class,
             'testimonials' => AdminTestimonialController::class,
             'business-ideas' => AdminBusinessIdeaController::class,
             'success-stories' => AdminSuccessStoryController::class,
-            'newsletter-subscribers' => NewsletterSubscriberController::class,
+            //'newsletter-subscribers' => NewsletterSubscriberController::class,
         ]);
 
         // Testimonial approval
@@ -188,12 +199,3 @@ Route::prefix('admin')->name('admin.')->group(function () {
 |--------------------------------------------------------------------------
 */
 require __DIR__ . '/auth.php';
-
-/*
-|--------------------------------------------------------------------------
-| 9. INTA SEND WEBHOOK
-|--------------------------------------------------------------------------
-*/
-Route::post('/webhook/intasend', [CheckoutController::class, 'handleIntaSend'])
-    ->middleware('web')
-    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
