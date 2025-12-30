@@ -20,27 +20,76 @@
     </section>
 
     {{-- ========================= --}}
-    {{-- LESSONS (FREE BY DEFAULT) --}}
-    {{-- ========================= --}}
-    <section id="roadmap">
-        <h2 class="text-3xl font-bold mb-6">🚀 Lessons</h2>
-        <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-            @forelse($lessons as $lesson)
-                <div class="bg-white p-6 rounded-2xl shadow border hover:shadow-xl transition">
-                    <h3 class="font-semibold text-lg mb-2">{{ $lesson->title }}</h3>
-                    <p class="text-sm text-gray-700">
-                        {{ Str::limit(strip_tags($lesson->content), 140) }}
-                    </p>
-                    <span class="inline-block mt-4 text-green-600 font-semibold text-sm">
-                        Free
-                    </span>
-                </div>
-            @empty
-                <p class="text-gray-500">No lessons yet.</p>
-            @endforelse
-        </div>
-        <div class="mt-6">{{ $lessons->links() }}</div>
-    </section>
+        {{-- LESSONS --}}
+        {{-- ========================= --}}
+        <section id="roadmap" class="mt-16">
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-8">
+                🚀 Lessons
+            </h2>
+
+            <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+                @forelse($lessons as $lesson)
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition flex flex-col">
+
+                        {{-- Tier Badge --}}
+                        <div class="mb-3">
+                            @if($lesson->tier === 'free')
+                                <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">
+                                    Free
+                                </span>
+                            @elseif($lesson->tier === 'pro')
+                                <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700">
+                                    Pro
+                                </span>
+                            @elseif($lesson->tier === 'premium')
+                                <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700">
+                                    Premium
+                                </span>
+                            @endif
+                        </div>
+
+                        {{-- Title --}}
+                        <h3 class="font-semibold text-lg text-gray-900 mb-2">
+                            {{ $lesson->title }}
+                        </h3>
+
+                        {{-- Preview --}}
+                        <p class="text-sm text-gray-600 mb-6">
+                            {{ Str::limit(strip_tags($lesson->content), 120) }}
+                        </p>
+
+                        {{-- CTA --}}
+                        <div class="mt-auto">
+                            @php
+                                $canAccess =
+                                    $lesson->tier === 'free'
+                                    || (auth()->check() && auth()->user()->tier === $lesson->tier)
+                                    || (auth()->check() && auth()->user()->tier === 'premium');
+                            @endphp
+
+                            @if($canAccess)
+                                <a href="{{ route('lessons.show', $lesson->slug) }}"
+                                class="inline-flex items-center text-indigo-600 font-semibold hover:text-indigo-800 transition">
+                                    Read lesson →
+                                </a>
+                            @else
+                                <a href="{{ route('checkout.show', ['tier' => $lesson->tier]) }}"
+                                class="inline-flex items-center text-gray-400 font-semibold hover:text-indigo-600 transition">
+                                    Unlock {{ ucfirst($lesson->tier) }} →
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-gray-500">No lessons yet.</p>
+                @endforelse
+            </div>
+
+            <div class="mt-10">
+                {{ $lessons->links() }}
+            </div>
+        </section>
+
 
     {{-- ================= --}}
     {{-- BUSINESS IDEAS --}}

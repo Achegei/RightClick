@@ -42,7 +42,7 @@ use App\Http\Controllers\Frontend\ProRoadmapController;
 use App\Http\Controllers\Frontend\PremiumRoadmapController;
 use App\Http\Controllers\Frontend\SuccessStoryController as FrontendSuccessStoryController;
 use App\Http\Controllers\Frontend\RoadmapController;
-
+use App\Http\Controllers\Frontend\LessonController as FrontendLessonController;
 /*
 |--------------------------------------------------------------------------
 | 1. PUBLIC ROUTES
@@ -55,6 +55,9 @@ Route::prefix('programs')->group(function () {
     Route::get('/', [ProgramController::class, 'index'])->name('program.index');
     Route::get('/{slug}', [ProgramController::class, 'show'])->name('programs.show');
 });
+
+Route::get('/lessons/{lesson:slug}', [FrontendLessonController::class, 'show'])
+    ->name('lessons.show');
 
 Route::get('/business-ideas', [FrontendBusinessIdeaController::class, 'index'])->name('business_ideas.index');
 Route::get('/business-ideas/{businessIdea:slug}', [FrontendBusinessIdeaController::class, 'show'])->name('business_ideas.show');
