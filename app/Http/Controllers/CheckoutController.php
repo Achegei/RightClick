@@ -17,10 +17,12 @@ class CheckoutController extends Controller
     public function show(string $tierSlug)
     {
         $tier = Tier::where('slug', $tierSlug)->firstOrFail();
+         $sourceBlogId = $request->query('source_blog');
 
         return view('checkout.show', [
             'tier'     => $tierSlug,
             'tierData' => $tier,
+             'sourceBlogId'  => $sourceBlogId,
         ]);
     }
 
@@ -47,6 +49,7 @@ class CheckoutController extends Controller
             'api_ref'   => $apiRef,
             'reference' => 'REF-' . strtoupper(uniqid()),
             'tier'      => $tierSlug,
+             'source_blog_id' => $sourceBlogId,
         ]);
 
         // Build Customer object

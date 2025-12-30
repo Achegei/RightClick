@@ -17,10 +17,17 @@ class BlogController extends Controller
 
     // Show single blog
     public function show(Blog $blog)
-    {
-        if (!$blog->published_at) {
-            abort(404);
-        }
-        return view('frontend.blogs.show', compact('blog'));
+{
+    // 1️⃣ Only allow published blogs
+    if (! $blog->published_at || $blog->published_at->isFuture()) {
+        abort(404);
     }
+
+    // 2️⃣ Increment views safely
+    $blog->increment('views');
+
+    // 3️⃣ Render blog
+    return view('frontend.blogs.show', compact('blog'));
+}
+
 }

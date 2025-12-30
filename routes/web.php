@@ -43,6 +43,7 @@ use App\Http\Controllers\Frontend\PremiumRoadmapController;
 use App\Http\Controllers\Frontend\SuccessStoryController as FrontendSuccessStoryController;
 use App\Http\Controllers\Frontend\RoadmapController;
 use App\Http\Controllers\Frontend\LessonController as FrontendLessonController;
+use App\Http\Controllers\Frontend\BlogCTAController;
 /*
 |--------------------------------------------------------------------------
 | 1. PUBLIC ROUTES
@@ -56,6 +57,9 @@ Route::prefix('programs')->group(function () {
     Route::get('/{slug}', [ProgramController::class, 'show'])->name('programs.show');
 });
 
+Route::post('/blogs/{blog}/cta', [BlogCTAController::class, 'store'])
+    ->name('blogs.cta');
+    
 Route::get('/lessons/{lesson:slug}', [FrontendLessonController::class, 'show'])
     ->name('lessons.show');
 
