@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Lesson;
 use App\Models\BusinessIdea;
-use App\Models\SuccessStory;
+use App\Models\UseGeneratedBusinessIdea;
 use App\Models\Video;
 use App\Models\Blog;
 use App\Models\Program;
@@ -72,9 +72,11 @@ class RoadmapController extends Controller
             'businessIdeas' => BusinessIdea::where('status', 'published')
                 ->latest()
                 ->paginate(6),
-            'successStories' => SuccessStory::where('status', 'published')
-                ->latest()
-                ->paginate(6),
+            'userbusinessIdeas' => BusinessIdea::where('status', 'published')
+                    ->latest()
+                    ->take(6)
+                    ->get(),
+
             'videos' => Video::latest()->take(6)->get(),
             'blogs' => Blog::whereNotNull('published_at')->latest('published_at')->paginate(6),
             'programs' => Program::whereIn('tier', ['free', 'pro'])

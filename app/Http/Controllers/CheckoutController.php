@@ -14,15 +14,15 @@ class CheckoutController extends Controller
     /**
      * Show the checkout page for a tier
      */
-    public function show(string $tierSlug)
+    public function show(Request $request, string $tierSlug)
     {
         $tier = Tier::where('slug', $tierSlug)->firstOrFail();
-         $sourceBlogId = $request->query('source_blog');
+        $sourceBlogId = $request->query('source_blog'); // ✅ now $request exists
 
         return view('checkout.show', [
-            'tier'     => $tierSlug,
-            'tierData' => $tier,
-             'sourceBlogId'  => $sourceBlogId,
+            'tier'          => $tierSlug,
+            'tierData'      => $tier,
+            'sourceBlogId'  => $sourceBlogId,
         ]);
     }
 
@@ -37,19 +37,20 @@ class CheckoutController extends Controller
         }
 
         $tier = Tier::where('slug', $tierSlug)->firstOrFail();
+        $sourceBlogId = $request->input('source_blog'); // ✅ get source_blog from request if any
 
         $apiRef = "tier-user{$user->id}-{$tierSlug}-" . time();
 
         // Create local payment record
         $payment = Payment::create([
-            'user_id'   => $user->id,
-            'amount'    => $tier->price,
-            'payment_provider' => 'intasend',
-            'status'    => 'pending',
-            'api_ref'   => $apiRef,
-            'reference' => 'REF-' . strtoupper(uniqid()),
-            'tier'      => $tierSlug,
-             'source_blog_id' => $sourceBlogId,
+            'user_id'        => $user->id,
+            'amount'         => $tier->price,
+            'payment_provider'=> 'intasend',
+            'status'         => 'pending',
+            'api_ref'        => $apiRef,
+            'reference'      => 'REF-' . strtoupper(uniqid()),
+            'tier'           => $tierSlug,
+            'source_blog_id' => $sourceBlogId,
         ]);
 
         // Build Customer object

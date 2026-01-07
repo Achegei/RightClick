@@ -34,6 +34,11 @@ class Payment extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function tier()
+    {
+        return $this->belongsTo(Tier::class);
+    }
+    
     public function program()
     {
         return $this->belongsTo(Program::class);

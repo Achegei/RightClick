@@ -14,4 +14,8 @@ class Tier extends Model
         'slug',
         'price',
     ];
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
 }

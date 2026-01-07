@@ -47,9 +47,9 @@
    Comments
 </a>
 
-<a href="{{ route('admin.success-stories.index') }}"
-   class="flex items-center px-4 py-2 rounded-lg transition {{ navClass('admin.blogs.*') }}">
-   Success Stories
+<a href="{{ route('admin.user-generated-business-ideas.index') }}"
+   class="flex items-center px-4 py-2 rounded-lg transition {{ navClass('admin.user-generated-business-ideas.*') }}">
+   User Business Ideas
 </a>
 
 <a href="{{ route('admin.lessons.index') }}"

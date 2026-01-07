@@ -12,6 +12,7 @@ class PricingController extends Controller
     {
         $user = Auth::user();
 
+
         // Fetch programs if user is logged in
         $programs = $user 
             ? Program::with(['courses.lessons'])->get() 

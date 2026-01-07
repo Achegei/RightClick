@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Lesson;
 use App\Models\BusinessIdea;
-use App\Models\SuccessStory;
+use App\Models\UserGeneratedBusinessIdea;
 use App\Models\Video;
 use App\Models\Blog;
 use App\Models\Program;
@@ -48,9 +48,13 @@ class FreeRoadmapController extends Controller
         /**
          * Success Stories (published)
          */
-        $successStories = SuccessStory::where('status', 'published')
-            ->latest()
-            ->paginate(6);
+        $userGeneratedBusinessIdeas = UserGeneratedBusinessIdea::where('status', 'published')
+        ->where('tier', 'free')
+        ->latest()
+        ->take(6)
+        ->get();
+
+
 
         /**
          * Videos (latest 6)
@@ -75,7 +79,7 @@ class FreeRoadmapController extends Controller
         return view('free-roadmap', compact(
             'lessons',
             'businessIdeas',
-            'successStories',
+            'userGeneratedBusinessIdeas',
             'videos',
             'blogs',
             'programs'
